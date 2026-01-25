@@ -218,7 +218,7 @@ class Charge extends ApiResource
     {
         $source = $charge->get('source');
 
-        if (!is_array($source)) {
+        if (! is_array($source)) {
             return null;
         }
 

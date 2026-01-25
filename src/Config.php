@@ -71,17 +71,17 @@ class Config
         }
 
         // Validate public key format
-        if (!str_starts_with($config['public_key'], 'pkey_')) {
+        if (! str_starts_with($config['public_key'], 'pkey_')) {
             throw ConfigurationException::invalidApiKey('public');
         }
 
         // Validate secret key format
-        if (!str_starts_with($config['secret_key'], 'skey_')) {
+        if (! str_starts_with($config['secret_key'], 'skey_')) {
             throw ConfigurationException::invalidApiKey('secret');
         }
 
         // Validate mode
-        if (!in_array($config['mode'], [self::MODE_LIVE, self::MODE_TEST], true)) {
+        if (! in_array($config['mode'], [self::MODE_LIVE, self::MODE_TEST], true)) {
             throw ConfigurationException::invalidValue('mode', 'Must be "live" or "test"');
         }
     }
@@ -101,7 +101,7 @@ class Config
      */
     public function isLiveMode(): bool
     {
-        return !$this->isTestMode();
+        return ! $this->isTestMode();
     }
 
     public function getPublicKey(): string

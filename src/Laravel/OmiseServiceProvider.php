@@ -47,12 +47,14 @@ class OmiseServiceProvider extends ServiceProvider implements DeferrableProvider
         // Register HttpClient
         $this->app->singleton(HttpClient::class, function ($app) {
             $logger = $app->bound('log') ? $app->make('log') : null;
+
             return new HttpClient($app->make(Config::class), $logger);
         });
 
         // Register main Omise class
         $this->app->singleton(Omise::class, function ($app) {
             $logger = $app->bound('log') ? $app->make('log') : null;
+
             return new Omise([
                 'public_key' => config('omise.public_key'),
                 'secret_key' => config('omise.secret_key'),

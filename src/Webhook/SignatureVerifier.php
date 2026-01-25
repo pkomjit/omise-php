@@ -128,6 +128,7 @@ class SignatureVerifier
     public function setTolerance(int $tolerance): self
     {
         $this->tolerance = $tolerance;
+
         return $this;
     }
 }

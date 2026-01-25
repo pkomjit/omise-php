@@ -14,7 +14,7 @@ A PHP SDK for [Omise](https://www.omise.co/) payment gateway integration. Suppor
 ## Installation
 
 ```bash
-composer require yourdomain/omise-php
+composer require pkomjit/omise-php
 ```
 
 ## Quick Start

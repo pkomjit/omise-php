@@ -52,7 +52,7 @@ class Response implements ArrayAccess, JsonSerializable
      */
     public function isSuccessful(): bool
     {
-        return !$this->isError() && $this->statusCode >= 200 && $this->statusCode < 300;
+        return ! $this->isError() && $this->statusCode >= 200 && $this->statusCode < 300;
     }
 
     /**

@@ -71,7 +71,7 @@ class PromptPay extends AbstractPaymentMethod
     ): Response {
         $options = [];
 
-        if (!empty($webhookEndpoints)) {
+        if (! empty($webhookEndpoints)) {
             $options['webhook_endpoints'] = $webhookEndpoints;
         }
 
@@ -92,7 +92,7 @@ class PromptPay extends AbstractPaymentMethod
     {
         $source = $charge->get('source');
 
-        if (!is_array($source)) {
+        if (! is_array($source)) {
             return null;
         }
 
@@ -229,6 +229,7 @@ class PromptPay extends AbstractPaymentMethod
     public function validateThbAmount(float $amount): bool
     {
         $satang = self::toSatang($amount);
+
         return $this->validateAmount($satang, 'THB');
     }
 

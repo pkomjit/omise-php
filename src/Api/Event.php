@@ -100,6 +100,7 @@ class Event extends ApiResource
     public function isChargeEvent(Response $event): bool
     {
         $key = $this->getKey($event);
+
         return $key !== null && str_starts_with($key, 'charge.');
     }
 
@@ -109,6 +110,7 @@ class Event extends ApiResource
     public function isRefundEvent(Response $event): bool
     {
         $key = $this->getKey($event);
+
         return $key !== null && str_starts_with($key, 'refund.');
     }
 
@@ -118,6 +120,7 @@ class Event extends ApiResource
     public function isCustomerEvent(Response $event): bool
     {
         $key = $this->getKey($event);
+
         return $key !== null && str_starts_with($key, 'customer.');
     }
 
@@ -127,6 +130,7 @@ class Event extends ApiResource
     public function isDisputeEvent(Response $event): bool
     {
         $key = $this->getKey($event);
+
         return $key !== null && str_starts_with($key, 'dispute.');
     }
 
@@ -136,6 +140,7 @@ class Event extends ApiResource
     public function isTransferEvent(Response $event): bool
     {
         $key = $this->getKey($event);
+
         return $key !== null && str_starts_with($key, 'transfer.');
     }
 
@@ -149,6 +154,7 @@ class Event extends ApiResource
         }
 
         $data = $this->getData($event);
+
         return $data !== null && ($data['status'] ?? '') === 'successful';
     }
 
@@ -162,6 +168,7 @@ class Event extends ApiResource
         }
 
         $data = $this->getData($event);
+
         return $data !== null && ($data['status'] ?? '') === 'failed';
     }
 

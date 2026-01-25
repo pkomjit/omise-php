@@ -218,6 +218,7 @@ class HttpClient
     public function setGuzzleClient(Client $client): self
     {
         $this->client = $client;
+
         return $this;
     }
 }

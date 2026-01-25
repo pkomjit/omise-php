@@ -88,12 +88,14 @@ abstract class AbstractPaymentMethod implements PaymentMethodInterface
     public function getMinimumAmount(string $currency): int
     {
         $currency = strtoupper($currency);
+
         return $this->minimumAmounts[$currency] ?? 0;
     }
 
     public function getMaximumAmount(string $currency): int
     {
         $currency = strtoupper($currency);
+
         return $this->maximumAmounts[$currency] ?? PHP_INT_MAX;
     }
 
@@ -123,7 +125,7 @@ abstract class AbstractPaymentMethod implements PaymentMethodInterface
     protected function validateRequiredParameters(array $options): void
     {
         foreach ($this->requiredParameters as $param) {
-            if (!isset($options[$param]) || $options[$param] === '') {
+            if (! isset($options[$param]) || $options[$param] === '') {
                 throw new \InvalidArgumentException("Missing required parameter: {$param}");
             }
         }
@@ -167,14 +169,14 @@ abstract class AbstractPaymentMethod implements PaymentMethodInterface
     public function charge(int $amount, string $currency, array $options = []): Response
     {
         // Validate currency
-        if (!$this->supportsCurrency($currency)) {
+        if (! $this->supportsCurrency($currency)) {
             throw new \InvalidArgumentException(
                 "Currency {$currency} is not supported by {$this->name}"
             );
         }
 
         // Validate amount
-        if (!$this->validateAmount($amount, $currency)) {
+        if (! $this->validateAmount($amount, $currency)) {
             throw new \InvalidArgumentException(
                 "Amount must be between {$this->getMinimumAmount($currency)} and {$this->getMaximumAmount($currency)}"
             );

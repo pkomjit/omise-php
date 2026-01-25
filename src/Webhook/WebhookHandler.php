@@ -57,11 +57,12 @@ class WebhookHandler
      */
     public function on(string $eventKey, Closure $handler): self
     {
-        if (!isset($this->handlers[$eventKey])) {
+        if (! isset($this->handlers[$eventKey])) {
             $this->handlers[$eventKey] = [];
         }
 
         $this->handlers[$eventKey][] = $handler;
+
         return $this;
     }
 
@@ -103,6 +104,7 @@ class WebhookHandler
     public function onUnhandled(Closure $handler): self
     {
         $this->fallbackHandler = $handler;
+
         return $this;
     }
 
@@ -175,6 +177,7 @@ class WebhookHandler
     public function getChargeId(Response $event): ?string
     {
         $data = $event->get('data', []);
+
         return $data['id'] ?? null;
     }
 
@@ -184,6 +187,7 @@ class WebhookHandler
     public function getChargeStatus(Response $event): ?string
     {
         $data = $event->get('data', []);
+
         return $data['status'] ?? null;
     }
 
@@ -211,6 +215,7 @@ class WebhookHandler
     public function getFailureCode(Response $event): ?string
     {
         $data = $event->get('data', []);
+
         return $data['failure_code'] ?? null;
     }
 
@@ -220,6 +225,7 @@ class WebhookHandler
     public function getFailureMessage(Response $event): ?string
     {
         $data = $event->get('data', []);
+
         return $data['failure_message'] ?? null;
     }
 
