@@ -205,7 +205,7 @@ Route::post('/webhooks/omise', function () {
         \Log::error('Webhook error: ' . $e->getMessage());
         return response()->json(['error' => $e->getMessage()], 400);
     }
-})->withoutMiddleware([\App\Http\Middleware\VerifyCsrfToken::class]);
+})->withoutMiddleware([\Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class]);
 '@ | Set-Content "routes/web.php"
 
 # Create QR code view

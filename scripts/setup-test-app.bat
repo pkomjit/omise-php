@@ -200,7 +200,7 @@ echo         return response^(^)-^>json^(['status' =^> 'ok']^);
 echo     } catch ^(\Exception $e^) {
 echo         return response^(^)-^>json^(['error' =^> $e-^>getMessage^(^)]^, 400^);
 echo     }
-echo }^)-^>withoutMiddleware^([\App\Http\Middleware\VerifyCsrfToken::class]^);
+echo }^)-^>withoutMiddleware^([\Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class]^);
 ) > routes\web.php
 exit /b 0
 
