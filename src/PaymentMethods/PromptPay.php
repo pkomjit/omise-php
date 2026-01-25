@@ -105,10 +105,10 @@ class PromptPay extends AbstractPaymentMethod
     /**
      * Download the QR code image content.
      *
-     * @param Response $charge The charge response
-     * @return string|null The QR code image content (PNG)
+     * @param  Response $charge  The charge response
+     * @return array{content: string, mime_type: string}|null The QR code content and MIME type
      */
-    public function getQrCodeContent(Response $charge): ?string
+    public function getQrCodeContent(Response $charge): ?array
     {
         $url = $this->getQrCodeUrl($charge);
 
@@ -118,41 +118,125 @@ class PromptPay extends AbstractPaymentMethod
 
         $content = @file_get_contents($url);
 
-        return $content !== false ? $content : null;
+        if ($content === false) {
+            return null;
+        }
+
+        $mimeType = $this->detectMimeType($content, $url);
+
+        return [
+            'content' => $content,
+            'mime_type' => $mimeType,
+        ];
+    }
+
+    /**
+     * Detect MIME type from content or URL.
+     */
+    private function detectMimeType(string $content, string $url): string
+    {
+        // Check for SVG (starts with < and contains <svg)
+        $trimmedContent = ltrim($content);
+        if (str_starts_with($trimmedContent, '<') && str_contains($content, '<svg')) {
+            return 'image/svg+xml';
+        }
+
+        // Check for PNG magic bytes
+        if (str_starts_with($content, "\x89PNG\r\n\x1a\n")) {
+            return 'image/png';
+        }
+
+        // Check for JPEG magic bytes
+        if (str_starts_with($content, "\xFF\xD8\xFF")) {
+            return 'image/jpeg';
+        }
+
+        // Check for GIF magic bytes
+        if (str_starts_with($content, 'GIF87a') || str_starts_with($content, 'GIF89a')) {
+            return 'image/gif';
+        }
+
+        // Fallback: check URL extension
+        $extension = strtolower(pathinfo(parse_url($url, PHP_URL_PATH) ?? '', PATHINFO_EXTENSION));
+
+        return match ($extension) {
+            'svg' => 'image/svg+xml',
+            'png' => 'image/png',
+            'jpg', 'jpeg' => 'image/jpeg',
+            'gif' => 'image/gif',
+            default => 'image/png', // Default fallback
+        };
     }
 
     /**
      * Get the QR code as base64-encoded string.
      *
-     * @param Response $charge The charge response
-     * @return string|null The base64-encoded QR code image
+     * @param  Response $charge  The charge response
+     * @return array{base64: string, mime_type: string}|null The base64-encoded content and MIME type
      */
-    public function getQrCodeBase64(Response $charge): ?string
+    public function getQrCodeBase64(Response $charge): ?array
     {
-        $content = $this->getQrCodeContent($charge);
+        $result = $this->getQrCodeContent($charge);
 
-        if ($content === null) {
+        if ($result === null) {
             return null;
         }
 
-        return base64_encode($content);
+        return [
+            'base64' => base64_encode($result['content']),
+            'mime_type' => $result['mime_type'],
+        ];
     }
 
     /**
      * Get the QR code as a data URI for HTML img src.
      *
-     * @param Response $charge The charge response
-     * @return string|null The data URI string
+     * @param  Response $charge  The charge response
+     * @return string|null The data URI string (supports SVG, PNG, JPEG, GIF)
      */
     public function getQrCodeDataUri(Response $charge): ?string
     {
-        $base64 = $this->getQrCodeBase64($charge);
+        $result = $this->getQrCodeBase64($charge);
 
-        if ($base64 === null) {
+        if ($result === null) {
             return null;
         }
 
-        return "data:image/png;base64,{$base64}";
+        return "data:{$result['mime_type']};base64,{$result['base64']}";
+    }
+
+    /**
+     * Get raw QR code content as string.
+     *
+     * @param  Response $charge  The charge response
+     * @return string|null The raw content (useful for SVG)
+     */
+    public function getQrCodeRaw(Response $charge): ?string
+    {
+        $result = $this->getQrCodeContent($charge);
+
+        return $result['content'] ?? null;
+    }
+
+    /**
+     * Get the QR code MIME type.
+     *
+     * @param  Response $charge  The charge response
+     * @return string|null The MIME type (e.g., 'image/svg+xml', 'image/png')
+     */
+    public function getQrCodeMimeType(Response $charge): ?string
+    {
+        $result = $this->getQrCodeContent($charge);
+
+        return $result['mime_type'] ?? null;
+    }
+
+    /**
+     * Check if the QR code is SVG format.
+     */
+    public function isQrCodeSvg(Response $charge): bool
+    {
+        return $this->getQrCodeMimeType($charge) === 'image/svg+xml';
     }
 
     /**
