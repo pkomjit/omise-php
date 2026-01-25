@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Omise\Api;
 
+use Omise\Exceptions\ApiException;
 use Omise\Http\Response;
 
 /**
@@ -21,42 +22,43 @@ class Source extends ApiResource
     /**
      * Source type constants.
      */
-    public const TYPE_PROMPTPAY = 'promptpay';
-    public const TYPE_TRUEMONEY = 'truemoney';
-    public const TYPE_ALIPAY = 'alipay';
-    public const TYPE_ALIPAY_CN = 'alipay_cn';
-    public const TYPE_ALIPAY_HK = 'alipay_hk';
-    public const TYPE_GRABPAY = 'grabpay';
-    public const TYPE_SHOPEEPAY = 'shopeepay';
-    public const TYPE_RABBIT_LINEPAY = 'rabbit_linepay';
-    public const TYPE_INTERNET_BANKING_BAY = 'internet_banking_bay';
-    public const TYPE_INTERNET_BANKING_BBL = 'internet_banking_bbl';
-    public const TYPE_INTERNET_BANKING_KTB = 'internet_banking_ktb';
-    public const TYPE_INTERNET_BANKING_SCB = 'internet_banking_scb';
-    public const TYPE_MOBILE_BANKING_BAY = 'mobile_banking_bay';
-    public const TYPE_MOBILE_BANKING_BBL = 'mobile_banking_bbl';
-    public const TYPE_MOBILE_BANKING_KTB = 'mobile_banking_ktb';
-    public const TYPE_MOBILE_BANKING_SCB = 'mobile_banking_scb';
-    public const TYPE_MOBILE_BANKING_KBANK = 'mobile_banking_kbank';
+    public const string TYPE_PROMPTPAY = 'promptpay';
+    public const string TYPE_TRUEMONEY = 'truemoney';
+    public const string TYPE_ALIPAY = 'alipay';
+    public const string TYPE_ALIPAY_CN = 'alipay_cn';
+    public const string TYPE_ALIPAY_HK = 'alipay_hk';
+    public const string TYPE_GRABPAY = 'grabpay';
+    public const string TYPE_SHOPEEPAY = 'shopeepay';
+    public const string TYPE_RABBIT_LINEPAY = 'rabbit_linepay';
+    public const string TYPE_INTERNET_BANKING_BAY = 'internet_banking_bay';
+    public const string TYPE_INTERNET_BANKING_BBL = 'internet_banking_bbl';
+    public const string TYPE_INTERNET_BANKING_KTB = 'internet_banking_ktb';
+    public const string TYPE_INTERNET_BANKING_SCB = 'internet_banking_scb';
+    public const string TYPE_MOBILE_BANKING_BAY = 'mobile_banking_bay';
+    public const string TYPE_MOBILE_BANKING_BBL = 'mobile_banking_bbl';
+    public const string TYPE_MOBILE_BANKING_KTB = 'mobile_banking_ktb';
+    public const string TYPE_MOBILE_BANKING_SCB = 'mobile_banking_scb';
+    public const string TYPE_MOBILE_BANKING_KBANK = 'mobile_banking_kbank';
 
     /**
      * Source flow constants.
      */
-    public const FLOW_REDIRECT = 'redirect';
-    public const FLOW_OFFLINE = 'offline';
-    public const FLOW_APP_REDIRECT = 'app_redirect';
+    public const string FLOW_REDIRECT = 'redirect';
+    public const string FLOW_OFFLINE = 'offline';
+    public const string FLOW_APP_REDIRECT = 'app_redirect';
 
     /**
      * Create a new source.
      *
-     * @param array $params Source parameters:
+     * @param  array $params  Source parameters:
      *   - type (required): Source type (e.g., 'promptpay', 'truemoney')
-     *   - amount (required): Amount in smallest currency unit
+     *   - amount (required): Amount in the smallest currency unit
      *   - currency (required): 3-letter ISO currency code
      *   - phone_number (optional): Required for truemoney
      *   - email (optional): Customer email
      *   - name (optional): Customer name
      *   - installment_term (optional): Installment term for installment payments
+     * @throws ApiException
      */
     public function create(array $params): Response
     {
@@ -74,8 +76,9 @@ class Source extends ApiResource
     /**
      * Create a PromptPay source.
      *
-     * @param int $amount Amount in satang (smallest unit)
-     * @param string $currency Currency code (usually 'THB')
+     * @param  int $amount  Amount in satang (smallest unit)
+     * @param  string $currency  Currency code (usually 'THB')
+     * @throws ApiException
      */
     public function createPromptPay(int $amount, string $currency = 'THB'): Response
     {
@@ -89,9 +92,10 @@ class Source extends ApiResource
     /**
      * Create a TrueMoney source.
      *
-     * @param int $amount Amount in satang
-     * @param string $phoneNumber Customer's TrueMoney phone number
-     * @param string $currency Currency code (usually 'THB')
+     * @param  int $amount  Amount in satang
+     * @param  string $phoneNumber  Customer's TrueMoney phone number
+     * @param  string $currency  Currency code (usually 'THB')
+     * @throws ApiException
      */
     public function createTrueMoney(int $amount, string $phoneNumber, string $currency = 'THB'): Response
     {
@@ -106,9 +110,10 @@ class Source extends ApiResource
     /**
      * Create an internet banking source.
      *
-     * @param string $bank Bank identifier (bay, bbl, ktb, scb)
-     * @param int $amount Amount in satang
-     * @param string $currency Currency code
+     * @param  string $bank  Bank identifier (bay, bbl, ktb, scb)
+     * @param  int $amount  Amount in satang
+     * @param  string $currency  Currency code
+     * @throws ApiException
      */
     public function createInternetBanking(string $bank, int $amount, string $currency = 'THB'): Response
     {
@@ -124,9 +129,10 @@ class Source extends ApiResource
     /**
      * Create a mobile banking source.
      *
-     * @param string $bank Bank identifier (bay, bbl, ktb, scb, kbank)
-     * @param int $amount Amount in satang
-     * @param string $currency Currency code
+     * @param  string $bank  Bank identifier (bay, bbl, ktb, scb, kbank)
+     * @param  int $amount  Amount in satang
+     * @param  string $currency  Currency code
+     * @throws ApiException
      */
     public function createMobileBanking(string $bank, int $amount, string $currency = 'THB'): Response
     {

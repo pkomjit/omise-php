@@ -151,6 +151,7 @@ class WebhookHandler
 
     /**
      * Parse webhook payload without verification (for testing or when verification is handled elsewhere).
+     * @throws WebhookException
      */
     public function parsePayload(string $payload): Response
     {

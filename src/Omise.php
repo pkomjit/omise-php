@@ -7,6 +7,7 @@ namespace Omise;
 use Omise\Api\Charge;
 use Omise\Api\Event;
 use Omise\Api\Source;
+use Omise\Exceptions\ConfigurationException;
 use Omise\Http\HttpClient;
 use Omise\PaymentMethods\PromptPay;
 use Omise\Webhook\SignatureVerifier;
@@ -48,7 +49,7 @@ class Omise
     /**
      * Create a new Omise SDK instance.
      *
-     * @param array $config Configuration options:
+     * @param  array $config  Configuration options:
      *   - public_key (required): Your Omise public key
      *   - secret_key (required): Your Omise secret key
      *   - api_url (optional): API base URL (default: https://api.omise.co)
@@ -57,7 +58,8 @@ class Omise
      *   - webhook_secret (optional): Webhook signing secret
      *   - timeout (optional): Request timeout in seconds (default: 30)
      *   - ssl_verify (optional): Verify SSL certificates (default: true)
-     * @param LoggerInterface|null $logger Optional PSR-3 logger
+     * @param  LoggerInterface|null $logger  Optional PSR-3 logger
+     * @throws ConfigurationException
      */
     public function __construct(array $config, ?LoggerInterface $logger = null)
     {

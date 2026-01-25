@@ -21,39 +21,39 @@ class Event extends ApiResource
      * Event key constants.
      */
     // Charge events
-    public const CHARGE_CREATE = 'charge.create';
-    public const CHARGE_UPDATE = 'charge.update';
-    public const CHARGE_COMPLETE = 'charge.complete';
-    public const CHARGE_CAPTURE = 'charge.capture';
-    public const CHARGE_EXPIRE = 'charge.expire';
-    public const CHARGE_REVERSE = 'charge.reverse';
+    public const string CHARGE_CREATE = 'charge.create';
+    public const string CHARGE_UPDATE = 'charge.update';
+    public const string CHARGE_COMPLETE = 'charge.complete';
+    public const string CHARGE_CAPTURE = 'charge.capture';
+    public const string CHARGE_EXPIRE = 'charge.expire';
+    public const string CHARGE_REVERSE = 'charge.reverse';
 
     // Refund events
-    public const REFUND_CREATE = 'refund.create';
+    public const string REFUND_CREATE = 'refund.create';
 
     // Customer events
-    public const CUSTOMER_CREATE = 'customer.create';
-    public const CUSTOMER_UPDATE = 'customer.update';
-    public const CUSTOMER_DESTROY = 'customer.destroy';
-    public const CUSTOMER_UPDATE_CARD = 'customer.update.card';
+    public const string CUSTOMER_CREATE = 'customer.create';
+    public const string CUSTOMER_UPDATE = 'customer.update';
+    public const string CUSTOMER_DESTROY = 'customer.destroy';
+    public const string CUSTOMER_UPDATE_CARD = 'customer.update.card';
 
     // Card events
-    public const CARD_UPDATE = 'card.update';
-    public const CARD_DESTROY = 'card.destroy';
+    public const string CARD_UPDATE = 'card.update';
+    public const string CARD_DESTROY = 'card.destroy';
 
     // Dispute events
-    public const DISPUTE_CREATE = 'dispute.create';
-    public const DISPUTE_UPDATE = 'dispute.update';
-    public const DISPUTE_CLOSE = 'dispute.close';
-    public const DISPUTE_ACCEPT = 'dispute.accept';
+    public const string DISPUTE_CREATE = 'dispute.create';
+    public const string DISPUTE_UPDATE = 'dispute.update';
+    public const string DISPUTE_CLOSE = 'dispute.close';
+    public const string DISPUTE_ACCEPT = 'dispute.accept';
 
     // Transfer events
-    public const TRANSFER_CREATE = 'transfer.create';
-    public const TRANSFER_UPDATE = 'transfer.update';
-    public const TRANSFER_DESTROY = 'transfer.destroy';
-    public const TRANSFER_SEND = 'transfer.send';
-    public const TRANSFER_PAY = 'transfer.pay';
-    public const TRANSFER_FAIL = 'transfer.fail';
+    public const string TRANSFER_CREATE = 'transfer.create';
+    public const string TRANSFER_UPDATE = 'transfer.update';
+    public const string TRANSFER_DESTROY = 'transfer.destroy';
+    public const string TRANSFER_SEND = 'transfer.send';
+    public const string TRANSFER_PAY = 'transfer.pay';
+    public const string TRANSFER_FAIL = 'transfer.fail';
 
     /**
      * Retrieve an event by ID.

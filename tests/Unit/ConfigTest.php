@@ -10,8 +10,8 @@ describe('Config', function () {
             'secret_key' => 'skey_test_456',
         ]);
 
-        expect($config->getPublicKey())->toBe('pkey_test_123');
-        expect($config->getSecretKey())->toBe('skey_test_456');
+        expect($config->getPublicKey())->toBe('pkey_test_123')
+            ->and($config->getSecretKey())->toBe('skey_test_456');
     });
 
     it('throws exception for missing public key', function () {
@@ -46,8 +46,8 @@ describe('Config', function () {
             'secret_key' => 'skey_test_456',
         ]);
 
-        expect($config->isTestMode())->toBeTrue();
-        expect($config->isLiveMode())->toBeFalse();
+        expect($config->isTestMode())->toBeTrue()
+            ->and($config->isLiveMode())->toBeFalse();
     });
 
     it('detects live mode from keys', function () {
@@ -56,8 +56,8 @@ describe('Config', function () {
             'secret_key' => 'skey_live_456',
         ]);
 
-        expect($config->isLiveMode())->toBeTrue();
-        expect($config->isTestMode())->toBeFalse();
+        expect($config->isLiveMode())->toBeTrue()
+            ->and($config->isTestMode())->toBeFalse();
     });
 
     it('uses default values', function () {
@@ -66,10 +66,10 @@ describe('Config', function () {
             'secret_key' => 'skey_test_456',
         ]);
 
-        expect($config->getApiUrl())->toBe(Config::API_URL_LIVE);
-        expect($config->getApiVersion())->toBe(Config::API_VERSION);
-        expect($config->getTimeout())->toBe(30);
-        expect($config->shouldVerifySsl())->toBeTrue();
+        expect($config->getApiUrl())->toBe(Config::API_URL_LIVE)
+            ->and($config->getApiVersion())->toBe(Config::API_VERSION)
+            ->and($config->getTimeout())->toBe(30)
+            ->and($config->shouldVerifySsl())->toBeTrue();
     });
 
     it('accepts custom values', function () {
@@ -81,9 +81,9 @@ describe('Config', function () {
             'webhook_secret' => 'whsec_123',
         ]);
 
-        expect($config->getTimeout())->toBe(60);
-        expect($config->shouldVerifySsl())->toBeFalse();
-        expect($config->getWebhookSecret())->toBe('whsec_123');
+        expect($config->getTimeout())->toBe(60)
+            ->and($config->shouldVerifySsl())->toBeFalse()
+            ->and($config->getWebhookSecret())->toBe('whsec_123');
     });
 
     it('masks secret key in toArray output', function () {
@@ -94,7 +94,7 @@ describe('Config', function () {
 
         $array = $config->toArray();
 
-        expect($array['secret_key'])->toContain('*');
-        expect($array['secret_key'])->toStartWith('skey_tes');
+        expect($array['secret_key'])->toContain('*')
+            ->and($array['secret_key'])->toStartWith('skey_tes');
     });
 });

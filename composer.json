@@ -1,5 +1,5 @@
 {
-    "name": "poowit/omise-php",
+    "name": "pkomjit/omise-php",
     "description": "PHP SDK for Omise Payment Gateway - Support PromptPay, Credit Card, and various payment methods",
     "keywords": [
         "omise",

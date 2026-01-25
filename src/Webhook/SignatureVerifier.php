@@ -16,7 +16,7 @@ class SignatureVerifier
     /**
      * Default tolerance in seconds for timestamp validation.
      */
-    private const DEFAULT_TOLERANCE = 300; // 5 minutes
+    private const int DEFAULT_TOLERANCE = 300; // 5 minutes
 
     private string $secret;
     private int $tolerance;

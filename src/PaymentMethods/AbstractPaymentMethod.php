@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace Omise\PaymentMethods;
 
+use InvalidArgumentException;
 use Omise\Api\Charge;
 use Omise\Api\Source;
+use Omise\Exceptions\ApiException;
 use Omise\Http\Response;
 
 /**
@@ -120,19 +122,20 @@ abstract class AbstractPaymentMethod implements PaymentMethodInterface
     /**
      * Validate that all required parameters are present.
      *
-     * @throws \InvalidArgumentException
+     * @throws InvalidArgumentException
      */
     protected function validateRequiredParameters(array $options): void
     {
         foreach ($this->requiredParameters as $param) {
             if (! isset($options[$param]) || $options[$param] === '') {
-                throw new \InvalidArgumentException("Missing required parameter: {$param}");
+                throw new InvalidArgumentException("Missing required parameter: {$param}");
             }
         }
     }
 
     /**
      * Create a source for this payment method.
+     * @throws ApiException
      */
     protected function createSource(int $amount, string $currency, array $additionalParams = []): Response
     {
@@ -147,6 +150,7 @@ abstract class AbstractPaymentMethod implements PaymentMethodInterface
 
     /**
      * Create a charge from a source.
+     * @throws ApiException
      */
     protected function createChargeFromSource(
         Response $source,
@@ -165,19 +169,20 @@ abstract class AbstractPaymentMethod implements PaymentMethodInterface
 
     /**
      * Default charge implementation using source creation.
+     * @throws ApiException
      */
     public function charge(int $amount, string $currency, array $options = []): Response
     {
         // Validate currency
         if (! $this->supportsCurrency($currency)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 "Currency {$currency} is not supported by {$this->name}"
             );
         }
 
         // Validate amount
         if (! $this->validateAmount($amount, $currency)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 "Amount must be between {$this->getMinimumAmount($currency)} and {$this->getMaximumAmount($currency)}"
             );
         }

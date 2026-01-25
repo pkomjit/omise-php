@@ -11,12 +11,12 @@ use Omise\Exceptions\ConfigurationException;
  */
 class Config
 {
-    public const API_VERSION = '2019-05-29';
-    public const API_URL_LIVE = 'https://api.omise.co';
-    public const API_URL_VAULT = 'https://vault.omise.co';
+    public const string API_VERSION = '2019-05-29';
+    public const string API_URL_LIVE = 'https://api.omise.co';
+    public const string API_URL_VAULT = 'https://vault.omise.co';
 
-    public const MODE_LIVE = 'live';
-    public const MODE_TEST = 'test';
+    public const string MODE_LIVE = 'live';
+    public const string MODE_TEST = 'test';
 
     private string $publicKey;
     private string $secretKey;
@@ -39,6 +39,9 @@ class Config
         'ssl_verify' => true,
     ];
 
+    /**
+     * @throws ConfigurationException
+     */
     public function __construct(array $config = [])
     {
         $config = array_merge(self::$defaults, $config);
@@ -151,6 +154,7 @@ class Config
 
     /**
      * Create configuration from environment variables.
+     * @throws ConfigurationException
      */
     public static function fromEnvironment(): self
     {

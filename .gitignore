@@ -8,4 +8,5 @@ composer.lock
 .env.local
 .idea/
 .vscode/
+.claude/
 *.log

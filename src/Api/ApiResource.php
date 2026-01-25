@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Omise\Api;
 
+use Omise\Exceptions\ApiException;
 use Omise\Http\HttpClient;
 use Omise\Http\Response;
 
@@ -53,6 +54,7 @@ abstract class ApiResource
 
     /**
      * Retrieve a resource by ID.
+     * @throws ApiException
      */
     public function retrieve(string $id): Response
     {
@@ -67,6 +69,7 @@ abstract class ApiResource
 
     /**
      * List resources with optional filters.
+     * @throws ApiException
      */
     public function all(array $params = []): Response
     {

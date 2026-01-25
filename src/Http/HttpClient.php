@@ -22,7 +22,7 @@ class HttpClient
     private Config $config;
     private LoggerInterface $logger;
 
-    private const USER_AGENT = 'OmisePHP/1.0.0';
+    private const string USER_AGENT = 'OmisePHP/1.0.0';
 
     public function __construct(Config $config, ?LoggerInterface $logger = null)
     {

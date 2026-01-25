@@ -5,17 +5,17 @@ use Omise\PaymentMethods\PromptPay;
 describe('PromptPay', function () {
     describe('currency conversion', function () {
         it('converts THB to satang', function () {
-            expect(PromptPay::toSatang(100.00))->toBe(10000);
-            expect(PromptPay::toSatang(20.00))->toBe(2000);
-            expect(PromptPay::toSatang(150000.00))->toBe(15000000);
-            expect(PromptPay::toSatang(99.99))->toBe(9999);
+            expect(PromptPay::toSatang(100.00))->toBe(10000)
+                ->and(PromptPay::toSatang(20.00))->toBe(2000)
+                ->and(PromptPay::toSatang(150000.00))->toBe(15000000)
+                ->and(PromptPay::toSatang(99.99))->toBe(9999);
         });
 
         it('converts satang to THB', function () {
-            expect(PromptPay::toThb(10000))->toBe(100.00);
-            expect(PromptPay::toThb(2000))->toBe(20.00);
-            expect(PromptPay::toThb(15000000))->toBe(150000.00);
-            expect(PromptPay::toThb(9999))->toBe(99.99);
+            expect(PromptPay::toThb(10000))->toBe(100.00)
+                ->and(PromptPay::toThb(2000))->toBe(20.00)
+                ->and(PromptPay::toThb(15000000))->toBe(150000.00)
+                ->and(PromptPay::toThb(9999))->toBe(99.99);
         });
     });
 

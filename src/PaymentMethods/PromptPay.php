@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Omise\PaymentMethods;
 
 use Omise\Api\Source;
+use Omise\Exceptions\ApiException;
 use Omise\Http\Response;
 
 /**
@@ -37,20 +38,21 @@ class PromptPay extends AbstractPaymentMethod
     /**
      * Default QR code expiration in seconds (24 hours).
      */
-    private const DEFAULT_EXPIRATION = 86400;
+    private const int DEFAULT_EXPIRATION = 86400;
 
     /**
      * Create a PromptPay charge and return the QR code.
      *
-     * @param int $amount Amount in satang (smallest unit)
-     * @param string $currency Currency code (must be 'THB')
-     * @param array $options Additional options:
+     * @param  int $amount  Amount in satang (smallest unit)
+     * @param  string $currency  Currency code (must be 'THB')
+     * @param  array $options  Additional options:
      *   - webhook_endpoints: Array of webhook URLs
      *   - expires_at: Expiration time (ISO 8601)
      *   - description: Charge description
      *   - metadata: Additional metadata
      *
      * @return Response The charge response containing QR code URL
+     * @throws ApiException
      */
     public function charge(int $amount, string $currency, array $options = []): Response
     {
@@ -60,9 +62,10 @@ class PromptPay extends AbstractPaymentMethod
     /**
      * Create a PromptPay charge with simplified parameters.
      *
-     * @param float $amount Amount in THB (will be converted to satang)
-     * @param array $webhookEndpoints Optional webhook URLs
-     * @param string|null $expiresAt Optional expiration time (ISO 8601)
+     * @param  float $amount  Amount in THB (will be converted to satang)
+     * @param  array $webhookEndpoints  Optional webhook URLs
+     * @param  string|null $expiresAt  Optional expiration time (ISO 8601)
+     * @throws ApiException
      */
     public function pay(
         float $amount,

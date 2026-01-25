@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Omise\Api;
 
+use Omise\Exceptions\ApiException;
 use Omise\Http\Response;
 
 /**
@@ -18,17 +19,17 @@ class Charge extends ApiResource
     /**
      * Charge status constants.
      */
-    public const STATUS_PENDING = 'pending';
-    public const STATUS_SUCCESSFUL = 'successful';
-    public const STATUS_FAILED = 'failed';
-    public const STATUS_EXPIRED = 'expired';
-    public const STATUS_REVERSED = 'reversed';
+    public const string STATUS_PENDING = 'pending';
+    public const string STATUS_SUCCESSFUL = 'successful';
+    public const string STATUS_FAILED = 'failed';
+    public const string STATUS_EXPIRED = 'expired';
+    public const string STATUS_REVERSED = 'reversed';
 
     /**
      * Create a new charge.
      *
-     * @param array $params Charge parameters:
-     *   - amount (required): Amount in smallest currency unit (e.g., satang for THB)
+     * @param  array $params  Charge parameters:
+     *   - amount (required): Amount in the smallest currency unit (e.g., satang for THB)
      *   - currency (required): 3-letter ISO currency code (e.g., 'THB')
      *   - source (optional): Source ID or inline source parameters
      *   - card (optional): Card token for card payments
@@ -38,6 +39,7 @@ class Charge extends ApiResource
      *   - webhook_endpoints (optional): Array of webhook URLs
      *   - metadata (optional): Additional metadata
      *   - expires_at (optional): Expiration time for pending charges
+     * @throws ApiException
      */
     public function create(array $params): Response
     {
@@ -55,10 +57,11 @@ class Charge extends ApiResource
     /**
      * Create a charge with an inline source (combined source+charge creation).
      *
-     * @param string $sourceType The source type (e.g., 'promptpay', 'truemoney')
-     * @param int $amount Amount in smallest currency unit
-     * @param string $currency 3-letter ISO currency code
-     * @param array $additionalParams Additional parameters for the charge
+     * @param  string $sourceType  The source type (e.g., 'promptpay', 'truemoney')
+     * @param  int $amount  Amount in the smallest currency unit
+     * @param  string $currency  3-letter ISO currency code
+     * @param  array $additionalParams  Additional parameters for the charge
+     * @throws ApiException
      */
     public function createWithSource(
         string $sourceType,
@@ -101,10 +104,11 @@ class Charge extends ApiResource
     /**
      * Update a charge.
      *
-     * @param string $chargeId Charge ID
-     * @param array $params Parameters to update:
+     * @param  string $chargeId  Charge ID
+     * @param  array $params  Parameters to update:
      *   - description (optional): New description
      *   - metadata (optional): New metadata
+     * @throws ApiException
      */
     public function update(string $chargeId, array $params): Response
     {
@@ -120,8 +124,9 @@ class Charge extends ApiResource
     /**
      * Capture an authorized charge (for card payments with capture=false).
      *
-     * @param string $chargeId Charge ID
-     * @param int|null $amount Amount to capture (optional, captures full amount if not specified)
+     * @param  string $chargeId  Charge ID
+     * @param  int|null $amount  Amount to capture (optional, captures full amount if not specified)
+     * @throws ApiException
      */
     public function capture(string $chargeId, ?int $amount = null): Response
     {
@@ -142,7 +147,8 @@ class Charge extends ApiResource
     /**
      * Reverse an uncaptured charge.
      *
-     * @param string $chargeId Charge ID
+     * @param  string $chargeId  Charge ID
+     * @throws ApiException
      */
     public function reverse(string $chargeId): Response
     {
@@ -158,7 +164,8 @@ class Charge extends ApiResource
     /**
      * Expire a pending charge.
      *
-     * @param string $chargeId Charge ID
+     * @param  string $chargeId  Charge ID
+     * @throws ApiException
      */
     public function expire(string $chargeId): Response
     {
@@ -174,7 +181,8 @@ class Charge extends ApiResource
     /**
      * Get the schedule associated with a charge.
      *
-     * @param string $chargeId Charge ID
+     * @param  string $chargeId  Charge ID
+     * @throws ApiException
      */
     public function getSchedule(string $chargeId): Response
     {
