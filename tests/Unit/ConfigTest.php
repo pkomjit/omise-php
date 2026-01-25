@@ -1,105 +1,78 @@
 <?php
 
-declare(strict_types=1);
-
-namespace Omise\Tests\Unit;
-
 use Omise\Config;
 use Omise\Exceptions\ConfigurationException;
-use PHPUnit\Framework\TestCase;
 
-class ConfigTest extends TestCase
-{
-    public function test_creates_config_with_valid_keys(): void
-    {
+describe('Config', function () {
+    it('creates config with valid keys', function () {
         $config = new Config([
             'public_key' => 'pkey_test_123',
             'secret_key' => 'skey_test_456',
         ]);
 
-        $this->assertEquals('pkey_test_123', $config->getPublicKey());
-        $this->assertEquals('skey_test_456', $config->getSecretKey());
-    }
+        expect($config->getPublicKey())->toBe('pkey_test_123');
+        expect($config->getSecretKey())->toBe('skey_test_456');
+    });
 
-    public function test_throws_exception_for_missing_public_key(): void
-    {
-        $this->expectException(ConfigurationException::class);
-        $this->expectExceptionMessage('public_key');
-
+    it('throws exception for missing public key', function () {
         new Config([
             'secret_key' => 'skey_test_456',
         ]);
-    }
+    })->throws(ConfigurationException::class, 'public_key');
 
-    public function test_throws_exception_for_missing_secret_key(): void
-    {
-        $this->expectException(ConfigurationException::class);
-        $this->expectExceptionMessage('secret_key');
-
+    it('throws exception for missing secret key', function () {
         new Config([
             'public_key' => 'pkey_test_123',
         ]);
-    }
+    })->throws(ConfigurationException::class, 'secret_key');
 
-    public function test_throws_exception_for_invalid_public_key_format(): void
-    {
-        $this->expectException(ConfigurationException::class);
-        $this->expectExceptionMessage('public');
-
+    it('throws exception for invalid public key format', function () {
         new Config([
             'public_key' => 'invalid_key',
             'secret_key' => 'skey_test_456',
         ]);
-    }
+    })->throws(ConfigurationException::class, 'public');
 
-    public function test_throws_exception_for_invalid_secret_key_format(): void
-    {
-        $this->expectException(ConfigurationException::class);
-        $this->expectExceptionMessage('secret');
-
+    it('throws exception for invalid secret key format', function () {
         new Config([
             'public_key' => 'pkey_test_123',
             'secret_key' => 'invalid_key',
         ]);
-    }
+    })->throws(ConfigurationException::class, 'secret');
 
-    public function test_detects_test_mode_from_keys(): void
-    {
+    it('detects test mode from keys', function () {
         $config = new Config([
             'public_key' => 'pkey_test_123',
             'secret_key' => 'skey_test_456',
         ]);
 
-        $this->assertTrue($config->isTestMode());
-        $this->assertFalse($config->isLiveMode());
-    }
+        expect($config->isTestMode())->toBeTrue();
+        expect($config->isLiveMode())->toBeFalse();
+    });
 
-    public function test_detects_live_mode_from_keys(): void
-    {
+    it('detects live mode from keys', function () {
         $config = new Config([
             'public_key' => 'pkey_live_123',
             'secret_key' => 'skey_live_456',
         ]);
 
-        $this->assertTrue($config->isLiveMode());
-        $this->assertFalse($config->isTestMode());
-    }
+        expect($config->isLiveMode())->toBeTrue();
+        expect($config->isTestMode())->toBeFalse();
+    });
 
-    public function test_uses_default_values(): void
-    {
+    it('uses default values', function () {
         $config = new Config([
             'public_key' => 'pkey_test_123',
             'secret_key' => 'skey_test_456',
         ]);
 
-        $this->assertEquals(Config::API_URL_LIVE, $config->getApiUrl());
-        $this->assertEquals(Config::API_VERSION, $config->getApiVersion());
-        $this->assertEquals(30, $config->getTimeout());
-        $this->assertTrue($config->shouldVerifySsl());
-    }
+        expect($config->getApiUrl())->toBe(Config::API_URL_LIVE);
+        expect($config->getApiVersion())->toBe(Config::API_VERSION);
+        expect($config->getTimeout())->toBe(30);
+        expect($config->shouldVerifySsl())->toBeTrue();
+    });
 
-    public function test_accepts_custom_values(): void
-    {
+    it('accepts custom values', function () {
         $config = new Config([
             'public_key' => 'pkey_test_123',
             'secret_key' => 'skey_test_456',
@@ -108,13 +81,12 @@ class ConfigTest extends TestCase
             'webhook_secret' => 'whsec_123',
         ]);
 
-        $this->assertEquals(60, $config->getTimeout());
-        $this->assertFalse($config->shouldVerifySsl());
-        $this->assertEquals('whsec_123', $config->getWebhookSecret());
-    }
+        expect($config->getTimeout())->toBe(60);
+        expect($config->shouldVerifySsl())->toBeFalse();
+        expect($config->getWebhookSecret())->toBe('whsec_123');
+    });
 
-    public function test_to_array_masks_secret_key(): void
-    {
+    it('masks secret key in toArray output', function () {
         $config = new Config([
             'public_key' => 'pkey_test_123',
             'secret_key' => 'skey_test_456789012345',
@@ -122,7 +94,7 @@ class ConfigTest extends TestCase
 
         $array = $config->toArray();
 
-        $this->assertStringContainsString('*', $array['secret_key']);
-        $this->assertStringStartsWith('skey_tes', $array['secret_key']);
-    }
-}
+        expect($array['secret_key'])->toContain('*');
+        expect($array['secret_key'])->toStartWith('skey_tes');
+    });
+});
