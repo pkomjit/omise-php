@@ -6,10 +6,33 @@ A PHP SDK for [Omise](https://www.omise.co/) payment gateway integration. Suppor
 
 - PHP 8.3+ support
 - Works with or without Laravel
-- PromptPay (QR Payment) support
+- Multiple payment methods (PromptPay, Rabbit LINE Pay, and more)
 - Charge, Source, and Event APIs
 - Webhook signature verification
 - Type-safe with full IDE support
+
+## Supported Payment Methods
+
+| Payment Method       | Type              | Country  | Currency | Limits         | Staths            |
+|----------------------|-------------------|----------|----------|----------------|-------------------|
+| **PromptPay**        | QR Code (Offline) | Thailand | THB      | 20 - 150,000   | Ready             |
+| **Rabbit LINE Pay**  | Redirect          | Thailand | THB      | 20 - 150,000   | Ready             |
+| **TrueMoney Wallet** | Redirect          | Thailand | THB      | 20 - 30,000    | Under development |
+| **Internet Banking** | Redirect          | Thailand | THB      | Varies by bank | Under development |
+| **Mobile Banking**   | App Redirect      | Thailand | THB      | Varies by bank | Under development |
+| **Alipay**           | Redirect          | China    | THB      | 20 - 150,000   | Under development |
+| **GrabPay**          | App Redirect      | Thailand | THB      | 20 - 150,000   | Under development |
+| **ShopeePay**        | App Redirect      | Thailand | THB      | 20 - 150,000   | Under development |
+
+### Supported Banks (Internet Banking)
+
+| Bank                       | Code    | Type            |
+|----------------------------|---------|-----------------|
+| Bank of Ayudhya (Krungsri) | `bay`   | Internet/Mobile |
+| Bangkok Bank               | `bbl`   | Internet/Mobile |
+| Krungthai Bank             | `ktb`   | Internet/Mobile |
+| Siam Commercial Bank       | `scb`   | Internet/Mobile |
+| Kasikorn Bank              | `kbank` | Mobile only     |
 
 ## Installation
 
@@ -31,14 +54,14 @@ $omise = new Omise([
     'secret_key' => 'skey_...',
 ]);
 
-// Create a PromptPay charge (100 THB)
+// PromptPay - QR Code payment (100 THB)
 $charge = $omise->payWithPromptPay(100.00);
-
-// Get the QR code URL
 $qrCodeUrl = $omise->promptPay()->getQrCodeUrl($charge);
 
-// Or get it as base64 for embedding in HTML
-$qrCodeBase64 = $omise->promptPay()->getQrCodeBase64($charge);
+// Rabbit LINE Pay - Redirect payment (100 THB)
+$charge = $omise->payWithRabbitLinePay(100.00, 'https://your-site.com/callback');
+$authorizeUrl = $omise->rabbitLinePay()->getAuthorizeUri($charge);
+// Redirect customer to $authorizeUrl
 ```
 
 ### Laravel
@@ -62,11 +85,13 @@ OMISE_WEBHOOK_SECRET=whsec_...  # Optional, for webhook verification
 ```php
 use Omise\Laravel\Facades\Omise;
 
-// Create a PromptPay charge
+// PromptPay - QR Code payment
 $charge = Omise::payWithPromptPay(100.00);
-
-// Get QR code URL
 $qrCodeUrl = Omise::promptPay()->getQrCodeUrl($charge);
+
+// Rabbit LINE Pay - Redirect payment
+$charge = Omise::payWithRabbitLinePay(100.00, route('payment.callback'));
+return redirect(Omise::rabbitLinePay()->getAuthorizeUri($charge));
 ```
 
 Or use dependency injection:
@@ -132,9 +157,98 @@ if ($omise->promptPay()->isFailed($charge)) {
 
 ### PromptPay Limits
 
-- Minimum: ฿20.00
-- Maximum: ฿150,000.00
+- Minimum: 20 THB
+- Maximum: 150,000 THB
 - QR code expires after 24 hours by default
+
+## Rabbit LINE Pay Usage
+
+Rabbit LINE Pay is a mobile e-wallet service integrated with LINE Messenger. It uses a redirect flow where customers authorize payment in the LINE app.
+
+```php
+use Omise\Omise;
+
+$omise = new Omise([
+    'public_key' => 'pkey_...',
+    'secret_key' => 'skey_...',
+]);
+
+// Simple payment (amount in THB, return_uri required)
+$charge = $omise->rabbitLinePay()->pay(
+    100.00,
+    'https://your-site.com/payment/complete'
+);
+
+// Get the authorization URL and redirect customer
+$authorizeUrl = $omise->rabbitLinePay()->getAuthorizeUri($charge);
+header("Location: {$authorizeUrl}");
+exit;
+
+// After customer completes payment, check status
+$charge = $omise->getCharge($chargeId);
+
+if ($omise->rabbitLinePay()->isSuccessful($charge)) {
+    // Payment completed successfully
+}
+
+if ($omise->rabbitLinePay()->isFailed($charge)) {
+    $errorCode = $omise->rabbitLinePay()->getFailureCode($charge);
+    // Thai message
+    $errorMessage = $omise->rabbitLinePay()->getFailureMessage($charge, 'th');
+    // English message
+    $errorMessageEn = $omise->rabbitLinePay()->getFailureMessage($charge, 'en');
+}
+
+// Check refund eligibility (within 60 days)
+if ($omise->rabbitLinePay()->canRefund($charge)) {
+    $deadline = $omise->rabbitLinePay()->getRefundDeadline($charge);
+}
+```
+
+### Laravel Usage
+
+```php
+use Omise\Laravel\Facades\Omise;
+
+// In your controller
+public function createPayment(Request $request)
+{
+    $charge = Omise::payWithRabbitLinePay(
+        $request->amount,
+        route('payment.callback')
+    );
+
+    return redirect(Omise::rabbitLinePay()->getAuthorizeUri($charge));
+}
+
+public function paymentCallback(Request $request)
+{
+    $charge = Omise::getCharge($request->charge_id);
+
+    if (Omise::rabbitLinePay()->isSuccessful($charge)) {
+        return view('payment.success');
+    }
+
+    return view('payment.failed', [
+        'message' => Omise::rabbitLinePay()->getFailureMessage($charge),
+    ]);
+}
+```
+
+### Rabbit LINE Pay Limits
+
+- Minimum: 20 THB
+- Maximum: 150,000 THB
+- Refunds supported within 60 days
+
+### Failure Codes
+
+| Code | Thai Message | English Message |
+|------|--------------|-----------------|
+| `failed_processing` | ระบบทำรายการไม่สำเร็จ | Payment processing failed |
+| `insufficient_balance` | วงเงินคงเหลือไม่เพียงพอ | Insufficient balance |
+| `payment_cancelled` | ผู้ซื้อยกเลิกการชำระเงิน | Payment was cancelled by customer |
+| `timeout` | หมดเวลาในการชำระเงิน | Payment timed out |
 
 ## Charge API
 
@@ -371,8 +485,10 @@ composer test
 | `sources()` | Get Source API |
 | `events()` | Get Event API |
 | `promptPay()` | Get PromptPay payment method |
+| `rabbitLinePay()` | Get Rabbit LINE Pay payment method |
 | `webhooks()` | Get webhook handler |
 | `payWithPromptPay($amount, $webhooks)` | Quick PromptPay payment |
+| `payWithRabbitLinePay($amount, $returnUri, $webhooks)` | Quick Rabbit LINE Pay payment |
 | `getCharge($id)` | Retrieve a charge |
 | `getEvent($id)` | Retrieve an event |
 | `isTestMode()` | Check if in test mode |
@@ -392,6 +508,24 @@ composer test
 | `isExpired($charge)` | Check if expired |
 | `getFailureCode($charge)` | Get failure code |
 | `getFailureMessage($charge)` | Get failure message (Thai) |
+
+### Rabbit LINE Pay
+
+| Method | Description |
+|--------|-------------|
+| `pay($amount, $returnUri, $webhooks)` | Create a payment |
+| `getAuthorizeUri($charge)` | Get URL to redirect customer |
+| `getReturnUri($charge)` | Get the return URI |
+| `isPending($charge)` | Check if pending |
+| `isPendingRedirect($charge)` | Check if awaiting customer redirect |
+| `isSuccessful($charge)` | Check if successful |
+| `isFailed($charge)` | Check if failed |
+| `isExpired($charge)` | Check if expired |
+| `isReversed($charge)` | Check if reversed/refunded |
+| `canRefund($charge)` | Check if refund is allowed (60 days) |
+| `getRefundDeadline($charge)` | Get refund deadline date |
+| `getFailureCode($charge)` | Get failure code |
+| `getFailureMessage($charge, $locale)` | Get failure message ('th' or 'en') |
 
 ## License
 

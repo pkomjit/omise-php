@@ -39,6 +39,9 @@ class PromptPay extends AbstractPaymentMethod
      * Default QR code expiration in seconds (24 hours).
      */
     private const int DEFAULT_EXPIRATION = 86400;
+    public const string FAILURE_PROCESSING = 'failed_processing';
+    public const string FAILURE_INSUFFICIENT_BALANCE = 'insufficient_balance';
+    public const string FAILURE_CANCELLED = 'payment_cancelled';
 
     /**
      * Create a PromptPay charge and return the QR code.
@@ -280,16 +283,28 @@ class PromptPay extends AbstractPaymentMethod
     }
 
     /**
-     * Get a human-readable failure message in Thai.
+     * Get a human-readable failure message.
+     *
+     * @param  Response $charge  The charge response
+     * @param  string $locale  Locale for message ('en' or 'th')
      */
-    public function getFailureMessage(Response $charge): ?string
+    public function getFailureMessage(Response $charge, string $locale = 'th'): ?string
     {
         $code = $this->getFailureCode($charge);
 
+        if ($locale === 'th') {
+            return match ($code) {
+                self::FAILURE_PROCESSING => 'ระบบทำรายการไม่สำเร็จ',
+                self::FAILURE_INSUFFICIENT_BALANCE => 'วงเงินคงเหลือไม่เพียงพอ',
+                self::FAILURE_CANCELLED => 'ผู้ซื้อยกเลิกการชำระเงิน',
+                default => $charge->get('failure_message'),
+            };
+        }
+
         return match ($code) {
-            'failed_processing' => 'ระบบทำรายการไม่สำเร็จ',
-            'insufficient_balance' => 'วงเงินคงเหลือไม่เพียงพอ',
-            'payment_cancelled' => 'ผู้ซื้อยกเลิกการชำระเงิน',
+            self::FAILURE_PROCESSING => 'Payment processing failed',
+            self::FAILURE_INSUFFICIENT_BALANCE => 'Insufficient balance',
+            self::FAILURE_CANCELLED => 'Payment was cancelled by customer',
             default => $charge->get('failure_message'),
         };
     }

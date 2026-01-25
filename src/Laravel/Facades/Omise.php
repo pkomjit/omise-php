@@ -12,6 +12,7 @@ use Omise\Config;
 use Omise\Http\HttpClient;
 use Omise\Http\Response;
 use Omise\PaymentMethods\PromptPay;
+use Omise\PaymentMethods\RabbitLinePay;
 use Omise\Webhook\WebhookHandler;
 
 /**
@@ -21,8 +22,10 @@ use Omise\Webhook\WebhookHandler;
  * @method static Source sources()
  * @method static Event events()
  * @method static PromptPay promptPay()
+ * @method static RabbitLinePay rabbitLinePay()
  * @method static WebhookHandler webhooks()
  * @method static Response payWithPromptPay(float $amount, array $webhookEndpoints = [])
+ * @method static Response payWithRabbitLinePay(float $amount, string $returnUri, array $webhookEndpoints = [])
  * @method static Response getCharge(string $chargeId)
  * @method static Response getEvent(string $eventId)
  * @method static Config getConfig()

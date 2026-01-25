@@ -10,6 +10,7 @@ use Omise\Api\Source;
 use Omise\Exceptions\ConfigurationException;
 use Omise\Http\HttpClient;
 use Omise\PaymentMethods\PromptPay;
+use Omise\PaymentMethods\RabbitLinePay;
 use Omise\Webhook\SignatureVerifier;
 use Omise\Webhook\WebhookHandler;
 use Psr\Log\LoggerInterface;
@@ -42,6 +43,7 @@ class Omise
 
     // Payment method instances (lazy-loaded)
     private ?PromptPay $promptPay = null;
+    private ?RabbitLinePay $rabbitLinePay = null;
 
     // Webhook handler instance
     private ?WebhookHandler $webhookHandler = null;
@@ -143,6 +145,18 @@ class Omise
         return $this->promptPay;
     }
 
+    /**
+     * Get the Rabbit LINE Pay payment method.
+     */
+    public function rabbitLinePay(): RabbitLinePay
+    {
+        if ($this->rabbitLinePay === null) {
+            $this->rabbitLinePay = new RabbitLinePay($this->charges(), $this->sources());
+        }
+
+        return $this->rabbitLinePay;
+    }
+
     // =========================================================================
     // Webhook Handling
     // =========================================================================
@@ -193,6 +207,19 @@ class Omise
     public function payWithPromptPay(float $amount, array $webhookEndpoints = []): \Omise\Http\Response
     {
         return $this->promptPay()->pay($amount, $webhookEndpoints);
+    }
+
+    /**
+     * Create a Rabbit LINE Pay charge with a simple interface.
+     *
+     * @param float $amount Amount in THB
+     * @param string $returnUri URL to redirect after payment
+     * @param array $webhookEndpoints Optional webhook URLs
+     * @return \Omise\Http\Response The charge response with authorize_uri for redirect
+     */
+    public function payWithRabbitLinePay(float $amount, string $returnUri, array $webhookEndpoints = []): \Omise\Http\Response
+    {
+        return $this->rabbitLinePay()->pay($amount, $returnUri, $webhookEndpoints);
     }
 
     /**
