@@ -7,6 +7,7 @@ namespace Omise;
 use Omise\Api\Charge;
 use Omise\Api\Customer;
 use Omise\Api\Event;
+use Omise\Api\LinkedAccount;
 use Omise\Api\Source;
 use Omise\Api\Token;
 use Omise\Exceptions\ApiException;
@@ -14,6 +15,7 @@ use Omise\Exceptions\ConfigurationException;
 use Omise\Http\HttpClient;
 use Omise\Http\Response;
 use Omise\PaymentMethods\CreditCard;
+use Omise\PaymentMethods\DirectDebit;
 use Omise\PaymentMethods\PromptPay;
 use Omise\PaymentMethods\RabbitLinePay;
 use Omise\Webhook\SignatureVerifier;
@@ -47,11 +49,13 @@ class Omise
     private ?Event $eventApi = null;
     private ?Token $tokenApi = null;
     private ?Customer $customerApi = null;
+    private ?LinkedAccount $linkedAccountApi = null;
 
     // Payment method instances (lazy-loaded)
     private ?PromptPay $promptPay = null;
     private ?RabbitLinePay $rabbitLinePay = null;
     private ?CreditCard $creditCard = null;
+    private ?DirectDebit $directDebit = null;
 
     // Webhook handler instance
     private ?WebhookHandler $webhookHandler = null;
@@ -161,6 +165,18 @@ class Omise
         return $this->customerApi;
     }
 
+    /**
+     * Get the LinkedAccount API.
+     */
+    public function linkedAccounts(): LinkedAccount
+    {
+        if ($this->linkedAccountApi === null) {
+            $this->linkedAccountApi = new LinkedAccount($this->httpClient);
+        }
+
+        return $this->linkedAccountApi;
+    }
+
     // =========================================================================
     // Payment Methods
     // =========================================================================
@@ -199,6 +215,18 @@ class Omise
         }
 
         return $this->creditCard;
+    }
+
+    /**
+     * Get the Direct Debit payment method.
+     */
+    public function directDebit(): DirectDebit
+    {
+        if ($this->directDebit === null) {
+            $this->directDebit = new DirectDebit($this->charges(), $this->customers(), $this->linkedAccounts());
+        }
+
+        return $this->directDebit;
     }
 
     // =========================================================================

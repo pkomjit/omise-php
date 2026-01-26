@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Omise\Api;
 
+use InvalidArgumentException;
 use Omise\Exceptions\ApiException;
 use Omise\Http\Response;
 
@@ -147,6 +148,7 @@ class Source extends ApiResource
 
     /**
      * Retrieve a source by ID.
+     * @throws ApiException
      */
     public function retrieve(string $sourceId): Response
     {
@@ -224,25 +226,25 @@ class Source extends ApiResource
     /**
      * Validate required parameters for source creation.
      *
-     * @throws \InvalidArgumentException
+     * @throws InvalidArgumentException
      */
     private function validateCreateParams(array $params): void
     {
         if (empty($params['type'])) {
-            throw new \InvalidArgumentException('type is required');
+            throw new InvalidArgumentException('type is required');
         }
 
         if (empty($params['amount'])) {
-            throw new \InvalidArgumentException('amount is required');
+            throw new InvalidArgumentException('amount is required');
         }
 
         if (empty($params['currency'])) {
-            throw new \InvalidArgumentException('currency is required');
+            throw new InvalidArgumentException('currency is required');
         }
 
         // Validate phone number for truemoney
         if ($params['type'] === self::TYPE_TRUEMONEY && empty($params['phone_number'])) {
-            throw new \InvalidArgumentException('phone_number is required for TrueMoney');
+            throw new InvalidArgumentException('phone_number is required for TrueMoney');
         }
     }
 }

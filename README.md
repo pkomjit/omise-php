@@ -20,6 +20,7 @@ A PHP SDK for [Omise](https://www.omise.co/) payment gateway integration. Suppor
 | **Credit Card**      | Card/3DS          | Multi-country | Multi         | Varies         | Ready             |
 | **PromptPay**        | QR Code (Offline) | Thailand      | THB           | 20 - 150,000   | Ready             |
 | **Rabbit LINE Pay**  | Redirect          | Thailand      | THB           | 20 - 150,000   | Ready             |
+| **Direct Debit**     | Bank Link         | Thailand      | THB           | 20 - 150,000   | Ready             |
 | **TrueMoney Wallet** | Redirect          | Thailand      | THB           | 20 - 30,000    | Under development |
 | **Internet Banking** | Redirect          | Thailand      | THB           | Varies by bank | Under development |
 | **Mobile Banking**   | App Redirect      | Thailand      | THB           | Varies by bank | Under development |
@@ -53,6 +54,15 @@ A PHP SDK for [Omise](https://www.omise.co/) payment gateway integration. Suppor
 | Krungthai Bank             | `ktb`   | Internet/Mobile |
 | Siam Commercial Bank       | `scb`   | Internet/Mobile |
 | Kasikorn Bank              | `kbank` | Mobile only     |
+
+### Supported Banks (Direct Debit)
+
+| Bank                       | Code                 | Note                           |
+|----------------------------|----------------------|--------------------------------|
+| Bank of Ayudhya (Krungsri) | `direct_debit_bay`   |                                |
+| Kasikorn Bank              | `direct_debit_kbank` |                                |
+| Krungthai Bank             | `direct_debit_ktb`   | Requires bank contact to delete |
+| Siam Commercial Bank       | `direct_debit_scb`   |                                |
 
 ## Installation
 
@@ -418,6 +428,197 @@ $charge = $omise->creditCard()->chargeCustomerCard(
 | `invalid_security_code` | รหัสความปลอดภัยไม่ถูกต้อง | Invalid security code |
 | `payment_rejected` | การชำระเงินถูกปฏิเสธ | Payment rejected |
 
+## Direct Debit Usage
+
+Direct Debit enables secure bank account linking for seamless, recurring payments. Customers link their bank account once through their bank's authentication, then can make payments without re-authentication.
+
+### Flow Overview
+
+1. **Create a linked account** - Generate a registration URL for the customer's bank
+2. **Customer authenticates** - Redirect customer to bank for account linking
+3. **Create a customer** - Associate the linked account with a customer record
+4. **Charge the customer** - Process payments using the linked account
+
+### Step 1: Create a Linked Account
+
+```php
+use Omise\Omise;
+use Omise\PaymentMethods\DirectDebit;
+
+$omise = new Omise([
+    'public_key' => 'pkey_...',
+    'secret_key' => 'skey_...',
+]);
+
+// Create a linked account for Kasikorn Bank
+$linkedAccount = $omise->directDebit()->createLinkedAccount(
+    bankType: DirectDebit::BANK_KBANK,
+    returnUri: 'https://your-site.com/direct-debit/callback'
+);
+
+// Get the registration URL and redirect customer
+$registrationUrl = $omise->directDebit()->getRegistrationUri($linkedAccount);
+header("Location: {$registrationUrl}");
+exit;
+```
+
+### Step 2: Handle Callback and Create Customer
+
+After the customer completes bank authentication, they're redirected back to your `return_uri`:
+
+```php
+// Get the linked account ID from the callback
+$linkedAccountId = $_GET['linked_account']; // lacct_...
+
+// Check if registration was successful
+$linkedAccount = $omise->directDebit()->getLinkedAccount($linkedAccountId);
+
+if ($omise->directDebit()->isLinkedAccountSuccessful($linkedAccount)) {
+    // Create a customer with the linked account
+    $customer = $omise->directDebit()->createCustomerWithLinkedAccount(
+        linkedAccountId: $linkedAccountId,
+        email: 'customer@example.com',
+        description: 'John Doe'
+    );
+
+    // Store $customer->getId() for future charges
+    $customerId = $customer->getId(); // cust_...
+}
+
+if ($omise->directDebit()->isLinkedAccountFailed($linkedAccount)) {
+    $errorMessage = $omise->directDebit()->getFailureMessage($linkedAccount, 'th');
+    // Handle error
+}
+```
+
+### Step 3: Charge the Customer
+
+```php
+// Charge using the linked account (amount in THB)
+$charge = $omise->directDebit()->pay(
+    customerId: $customerId,
+    linkedAccountId: $linkedAccountId,
+    amount: 100.00,  // 100 THB
+    options: [
+        'description' => 'Monthly subscription',
+        'metadata' => ['order_id' => 'ORD-123'],
+    ]
+);
+
+// Or charge in satang for precise amounts
+$charge = $omise->directDebit()->charge(
+    customerId: $customerId,
+    linkedAccountId: $linkedAccountId,
+    amount: 10000,  // 100 THB in satang
+);
+
+// Check charge status
+if ($omise->directDebit()->isSuccessful($charge)) {
+    // Payment successful
+}
+
+if ($omise->directDebit()->isFailed($charge)) {
+    $errorCode = $omise->directDebit()->getFailureCode($charge);
+    $errorMessage = $omise->directDebit()->getFailureMessage($charge, 'th');
+}
+```
+
+### Adding Linked Account to Existing Customer
+
+```php
+// Add a new linked account to an existing customer
+$customer = $omise->directDebit()->addLinkedAccountToCustomer(
+    customerId: $customerId,
+    linkedAccountId: $newLinkedAccountId
+);
+```
+
+### Deleting a Linked Account
+
+```php
+// Delete a linked account
+$result = $omise->directDebit()->deleteLinkedAccount($linkedAccountId);
+
+// Note: For Krungthai Bank (KTB), customers must also contact their bank separately
+```
+
+### Laravel Usage
+
+```php
+use Omise\Laravel\Facades\Omise;
+use Omise\PaymentMethods\DirectDebit;
+
+// In your controller
+public function linkBank(Request $request)
+{
+    $linkedAccount = Omise::directDebit()->createLinkedAccount(
+        bankType: $request->bank_type, // e.g., DirectDebit::BANK_KBANK
+        returnUri: route('direct-debit.callback')
+    );
+
+    return redirect(Omise::directDebit()->getRegistrationUri($linkedAccount));
+}
+
+public function callback(Request $request)
+{
+    $linkedAccount = Omise::directDebit()->getLinkedAccount($request->linked_account);
+
+    if (Omise::directDebit()->isLinkedAccountSuccessful($linkedAccount)) {
+        // Create customer and store for future charges
+        $customer = Omise::directDebit()->createCustomerWithLinkedAccount(
+            linkedAccountId: $request->linked_account,
+            email: auth()->user()->email
+        );
+
+        // Store customer ID and linked account ID in your database
+        auth()->user()->update([
+            'omise_customer_id' => $customer->getId(),
+            'omise_linked_account_id' => $request->linked_account,
+        ]);
+
+        return redirect()->route('dashboard')->with('success', 'Bank account linked successfully');
+    }
+
+    return redirect()->route('settings')->with('error', 'Bank linking failed');
+}
+
+public function charge(Request $request)
+{
+    $user = auth()->user();
+
+    $charge = Omise::directDebit()->pay(
+        customerId: $user->omise_customer_id,
+        linkedAccountId: $user->omise_linked_account_id,
+        amount: $request->amount
+    );
+
+    if (Omise::directDebit()->isSuccessful($charge)) {
+        return response()->json(['success' => true]);
+    }
+
+    return response()->json([
+        'success' => false,
+        'message' => Omise::directDebit()->getFailureMessage($charge)
+    ], 400);
+}
+```
+
+### Direct Debit Limits
+
+- Minimum: 20 THB
+- Maximum: 150,000 THB
+- **Note:** Direct Debit charges cannot be refunded
+
+### Direct Debit Failure Codes
+
+| Code | Thai Message | English Message |
+|------|--------------|-----------------|
+| `failed_processing` | ระบบทำรายการไม่สำเร็จ | Payment processing failed |
+| `invalid_account` | บัญชีไม่ถูกต้องหรือไม่พบ | Account information invalid or not found |
+| `registration_rejected` | ธนาคารปฏิเสธการลงทะเบียน | Bank rejected registration |
+| `insufficient_fund` | ยอดเงินไม่เพียงพอ | Insufficient funds or limit exceeded |
+| `rate_limit_exceeded` | มีการทำรายการมากเกินไป กรุณารอสักครู่ | Too many requests, please try again later |
+
 ## Charge API
 
 ```php
@@ -656,9 +857,11 @@ composer test
 | `events()` | Get Event API |
 | `tokens()` | Get Token API |
 | `customers()` | Get Customer API |
+| `linkedAccounts()` | Get LinkedAccount API |
 | `promptPay()` | Get PromptPay payment method |
 | `rabbitLinePay()` | Get Rabbit LINE Pay payment method |
 | `creditCard()` | Get Credit Card payment method |
+| `directDebit()` | Get Direct Debit payment method |
 | `webhooks()` | Get webhook handler |
 | `payWithPromptPay($amount, $webhooks)` | Quick PromptPay payment |
 | `payWithRabbitLinePay($amount, $returnUri, $webhooks)` | Quick Rabbit LINE Pay payment |
@@ -730,6 +933,56 @@ composer test
 | `isMultiCurrency($charge)` | Check if multi-currency |
 | `getFailureCode($charge)` | Get failure code |
 | `getFailureMessage($charge, $locale)` | Get failure message |
+
+### Direct Debit
+
+| Method | Description |
+|--------|-------------|
+| `createLinkedAccount($bankType, $returnUri, $citizenId)` | Create a linked account for bank auth |
+| `getRegistrationUri($linkedAccount)` | Get URL for bank registration |
+| `getLinkedAccount($linkedAccountId)` | Retrieve a linked account |
+| `deleteLinkedAccount($linkedAccountId)` | Delete a linked account |
+| `createCustomerWithLinkedAccount($linkedAccountId, $email, $desc)` | Create customer with linked account |
+| `addLinkedAccountToCustomer($customerId, $linkedAccountId)` | Add linked account to existing customer |
+| `charge($customerId, $linkedAccountId, $amount, $options)` | Charge in satang |
+| `pay($customerId, $linkedAccountId, $amount, $options)` | Charge in THB |
+| `isLinkedAccountPending($linkedAccount)` | Check if registration pending |
+| `isLinkedAccountSuccessful($linkedAccount)` | Check if registration successful |
+| `isLinkedAccountFailed($linkedAccount)` | Check if registration failed |
+| `isPending($charge)` | Check if charge pending |
+| `isSuccessful($charge)` | Check if charge successful |
+| `isFailed($charge)` | Check if charge failed |
+| `getFailureCode($response)` | Get failure code |
+| `getFailureMessage($response, $locale)` | Get failure message ('th' or 'en') |
+| `getSupportedBanks()` | Get all supported banks |
+| `getBankName($bankType)` | Get bank display name |
+| `getBankCode($bankType)` | Get bank short code |
+| `isSupportedBank($bankType)` | Check if bank is supported |
+| `canRefund()` | Returns false (no refunds) |
+| `getMinimumAmount()` | Get min amount in satang (2000) |
+| `getMaximumAmount()` | Get max amount in satang (15000000) |
+| `getMinimumThb()` | Get min amount in THB (20) |
+| `getMaximumThb()` | Get max amount in THB (150000) |
+
+### LinkedAccount API
+
+| Method | Description |
+|--------|-------------|
+| `create($params)` | Create a linked account |
+| `createForBank($bankType, $returnUri, $citizenId)` | Create with simplified params |
+| `retrieve($linkedAccountId)` | Get a linked account |
+| `all($params)` | List all linked accounts |
+| `destroy($linkedAccountId)` | Delete a linked account |
+| `getRegistrationUri($linkedAccount)` | Get registration URL |
+| `getType($linkedAccount)` | Get bank type |
+| `getStatus($linkedAccount)` | Get status |
+| `isPending($linkedAccount)` | Check if pending |
+| `isSuccessful($linkedAccount)` | Check if successful |
+| `isFailed($linkedAccount)` | Check if failed |
+| `isDeleted($linkedAccount)` | Check if deleted |
+| `getBankName($type)` | Get bank display name |
+| `getSupportedBanks()` | Get supported bank types |
+| `isSupportedBank($type)` | Check if bank supported |
 
 ### Currency Helper
 

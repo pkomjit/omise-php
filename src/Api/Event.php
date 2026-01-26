@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Omise\Api;
 
+use Omise\Exceptions\ApiException;
 use Omise\Http\Response;
 
 /**
@@ -57,6 +58,7 @@ class Event extends ApiResource
 
     /**
      * Retrieve an event by ID.
+     * @throws ApiException
      */
     public function retrieve(string $eventId): Response
     {
@@ -66,12 +68,13 @@ class Event extends ApiResource
     /**
      * List all events with optional filters.
      *
-     * @param array $params Filter parameters:
+     * @param  array $params  Filter parameters:
      *   - offset: Starting offset
      *   - limit: Number of records to return (max 100)
      *   - from: Start date (ISO 8601)
      *   - to: End date (ISO 8601)
      *   - order: Sort order ('chronological' or 'reverse_chronological')
+     * @throws ApiException
      */
     public function all(array $params = []): Response
     {

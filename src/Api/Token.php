@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Omise\Api;
 
+use InvalidArgumentException;
 use Omise\Exceptions\ApiException;
 use Omise\Http\HttpClient;
 use Omise\Http\Response;
@@ -189,36 +190,36 @@ class Token
     /**
      * Validate required card parameters.
      *
-     * @throws \InvalidArgumentException
+     * @throws InvalidArgumentException
      */
     private function validateCardParams(array $card): void
     {
         if (empty($card['name'])) {
-            throw new \InvalidArgumentException('card[name] is required');
+            throw new InvalidArgumentException('card[name] is required');
         }
 
         if (empty($card['number'])) {
-            throw new \InvalidArgumentException('card[number] is required');
+            throw new InvalidArgumentException('card[number] is required');
         }
 
         if (empty($card['expiration_month'])) {
-            throw new \InvalidArgumentException('card[expiration_month] is required');
+            throw new InvalidArgumentException('card[expiration_month] is required');
         }
 
         if (empty($card['expiration_year'])) {
-            throw new \InvalidArgumentException('card[expiration_year] is required');
+            throw new InvalidArgumentException('card[expiration_year] is required');
         }
 
         // Validate card number format (basic check - numbers only)
         $number = preg_replace('/\D/', '', $card['number']);
         if (strlen($number) < 13 || strlen($number) > 19) {
-            throw new \InvalidArgumentException('Invalid card number length');
+            throw new InvalidArgumentException('Invalid card number length');
         }
 
         // Validate expiration month
         $month = (int) $card['expiration_month'];
         if ($month < 1 || $month > 12) {
-            throw new \InvalidArgumentException('Invalid expiration month');
+            throw new InvalidArgumentException('Invalid expiration month');
         }
 
         // Validate expiration year
@@ -228,7 +229,7 @@ class Token
             $year += 2000;
         }
         if ($year < $currentYear || $year > $currentYear + 20) {
-            throw new \InvalidArgumentException('Invalid expiration year');
+            throw new InvalidArgumentException('Invalid expiration year');
         }
     }
 }

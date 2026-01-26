@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Omise\Api;
 
+use InvalidArgumentException;
 use Omise\Exceptions\ApiException;
 use Omise\Http\Response;
 
@@ -230,22 +231,22 @@ class LinkedAccount extends ApiResource
     /**
      * Validate required parameters for linked account creation.
      *
-     * @throws \InvalidArgumentException
+     * @throws InvalidArgumentException
      */
     private function validateCreateParams(array $params): void
     {
         if (empty($params['type'])) {
-            throw new \InvalidArgumentException('type is required');
+            throw new InvalidArgumentException('type is required');
         }
 
         if (! $this->isSupportedBank($params['type'])) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 "Invalid bank type: {$params['type']}. Supported: " . implode(', ', $this->getSupportedBanks())
             );
         }
 
         if (empty($params['return_uri'])) {
-            throw new \InvalidArgumentException('return_uri is required');
+            throw new InvalidArgumentException('return_uri is required');
         }
     }
 }
