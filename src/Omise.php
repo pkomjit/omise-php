@@ -5,10 +5,15 @@ declare(strict_types=1);
 namespace Omise;
 
 use Omise\Api\Charge;
+use Omise\Api\Customer;
 use Omise\Api\Event;
 use Omise\Api\Source;
+use Omise\Api\Token;
+use Omise\Exceptions\ApiException;
 use Omise\Exceptions\ConfigurationException;
 use Omise\Http\HttpClient;
+use Omise\Http\Response;
+use Omise\PaymentMethods\CreditCard;
 use Omise\PaymentMethods\PromptPay;
 use Omise\PaymentMethods\RabbitLinePay;
 use Omise\Webhook\SignatureVerifier;
@@ -40,10 +45,13 @@ class Omise
     private ?Charge $chargeApi = null;
     private ?Source $sourceApi = null;
     private ?Event $eventApi = null;
+    private ?Token $tokenApi = null;
+    private ?Customer $customerApi = null;
 
     // Payment method instances (lazy-loaded)
     private ?PromptPay $promptPay = null;
     private ?RabbitLinePay $rabbitLinePay = null;
+    private ?CreditCard $creditCard = null;
 
     // Webhook handler instance
     private ?WebhookHandler $webhookHandler = null;
@@ -129,6 +137,30 @@ class Omise
         return $this->eventApi;
     }
 
+    /**
+     * Get the Token API.
+     */
+    public function tokens(): Token
+    {
+        if ($this->tokenApi === null) {
+            $this->tokenApi = new Token($this->httpClient);
+        }
+
+        return $this->tokenApi;
+    }
+
+    /**
+     * Get the Customer API.
+     */
+    public function customers(): Customer
+    {
+        if ($this->customerApi === null) {
+            $this->customerApi = new Customer($this->httpClient);
+        }
+
+        return $this->customerApi;
+    }
+
     // =========================================================================
     // Payment Methods
     // =========================================================================
@@ -155,6 +187,18 @@ class Omise
         }
 
         return $this->rabbitLinePay;
+    }
+
+    /**
+     * Get the Credit Card payment method.
+     */
+    public function creditCard(): CreditCard
+    {
+        if ($this->creditCard === null) {
+            $this->creditCard = new CreditCard($this->charges(), $this->tokens(), $this->customers());
+        }
+
+        return $this->creditCard;
     }
 
     // =========================================================================
@@ -200,11 +244,12 @@ class Omise
     /**
      * Create a PromptPay charge with a simple interface.
      *
-     * @param float $amount Amount in THB
-     * @param array $webhookEndpoints Optional webhook URLs
-     * @return \Omise\Http\Response The charge response
+     * @param  float $amount  Amount in THB
+     * @param  array $webhookEndpoints  Optional webhook URLs
+     * @return Response The charge response
+     * @throws ApiException
      */
-    public function payWithPromptPay(float $amount, array $webhookEndpoints = []): \Omise\Http\Response
+    public function payWithPromptPay(float $amount, array $webhookEndpoints = []): Response
     {
         return $this->promptPay()->pay($amount, $webhookEndpoints);
     }
@@ -212,20 +257,40 @@ class Omise
     /**
      * Create a Rabbit LINE Pay charge with a simple interface.
      *
-     * @param float $amount Amount in THB
-     * @param string $returnUri URL to redirect after payment
-     * @param array $webhookEndpoints Optional webhook URLs
-     * @return \Omise\Http\Response The charge response with authorize_uri for redirect
+     * @param  float $amount  Amount in THB
+     * @param  string $returnUri  URL to redirect after payment
+     * @param  array $webhookEndpoints  Optional webhook URLs
+     * @return Response The charge response with authorize_uri for redirect
+     * @throws ApiException
      */
-    public function payWithRabbitLinePay(float $amount, string $returnUri, array $webhookEndpoints = []): \Omise\Http\Response
+    public function payWithRabbitLinePay(float $amount, string $returnUri, array $webhookEndpoints = []): Response
     {
         return $this->rabbitLinePay()->pay($amount, $returnUri, $webhookEndpoints);
     }
 
     /**
+     * Create a credit card charge with a simple interface.
+     *
+     * @param  string $tokenId  Card token ID
+     * @param  float $amount  Amount in main currency unit (e.g., 100.00 THB)
+     * @param  string $currency  Currency code (default: THB)
+     * @param  string|null $returnUri  URL for 3D Secure redirect
+     * @return Response The charge response
+     * @throws ApiException
+     */
+    public function payWithCard(
+        string $tokenId,
+        float $amount,
+        string $currency = 'THB',
+        ?string $returnUri = null
+    ): Response {
+        return $this->creditCard()->pay($tokenId, $amount, $currency, $returnUri);
+    }
+
+    /**
      * Get a charge by ID.
      */
-    public function getCharge(string $chargeId): \Omise\Http\Response
+    public function getCharge(string $chargeId): Response
     {
         return $this->charges()->retrieve($chargeId);
     }
@@ -233,9 +298,26 @@ class Omise
     /**
      * Get an event by ID.
      */
-    public function getEvent(string $eventId): \Omise\Http\Response
+    public function getEvent(string $eventId): Response
     {
         return $this->events()->retrieve($eventId);
+    }
+
+    /**
+     * Get a customer by ID.
+     * @throws ApiException
+     */
+    public function getCustomer(string $customerId): Response
+    {
+        return $this->customers()->retrieve($customerId);
+    }
+
+    /**
+     * Get the default currency.
+     */
+    public function getDefaultCurrency(): string
+    {
+        return $this->config->getDefaultCurrency();
     }
 
     // =========================================================================

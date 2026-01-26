@@ -101,14 +101,15 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Currency
+    | Default Currency
     |--------------------------------------------------------------------------
     |
-    | The default currency to use for charges.
+    | The default currency to use for charges. Supports multi-currency if
+    | enabled on your Omise account (THB, USD, EUR, GBP, JPY, SGD, etc.)
     |
     */
 
-    'currency' => env('OMISE_CURRENCY', 'THB'),
+    'default_currency' => env('OMISE_DEFAULT_CURRENCY', 'THB'),
 
     /*
     |--------------------------------------------------------------------------

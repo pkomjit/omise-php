@@ -26,6 +26,7 @@ class Config
     private ?string $webhookSecret;
     private int $timeout;
     private bool $sslVerify;
+    private string $defaultCurrency;
 
     /**
      * Default configuration values.
@@ -37,6 +38,7 @@ class Config
         'webhook_secret' => null,
         'timeout' => 30,
         'ssl_verify' => true,
+        'default_currency' => 'THB',
     ];
 
     /**
@@ -56,6 +58,7 @@ class Config
         $this->webhookSecret = $config['webhook_secret'];
         $this->timeout = (int) $config['timeout'];
         $this->sslVerify = (bool) $config['ssl_verify'];
+        $this->defaultCurrency = strtoupper($config['default_currency']);
     }
 
     /**
@@ -152,6 +155,11 @@ class Config
         return $this->sslVerify;
     }
 
+    public function getDefaultCurrency(): string
+    {
+        return $this->defaultCurrency;
+    }
+
     /**
      * Create configuration from environment variables.
      * @throws ConfigurationException
@@ -163,6 +171,7 @@ class Config
             'secret_key' => getenv('OMISE_SECRET_KEY') ?: '',
             'webhook_secret' => getenv('OMISE_WEBHOOK_SECRET') ?: null,
             'mode' => getenv('OMISE_MODE') ?: self::MODE_LIVE,
+            'default_currency' => getenv('OMISE_DEFAULT_CURRENCY') ?: 'THB',
         ]);
     }
 
@@ -179,6 +188,7 @@ class Config
             'mode' => $this->mode,
             'timeout' => $this->timeout,
             'ssl_verify' => $this->sslVerify,
+            'default_currency' => $this->defaultCurrency,
         ];
     }
 

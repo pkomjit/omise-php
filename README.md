@@ -6,23 +6,43 @@ A PHP SDK for [Omise](https://www.omise.co/) payment gateway integration. Suppor
 
 - PHP 8.3+ support
 - Works with or without Laravel
-- Multiple payment methods (PromptPay, Rabbit LINE Pay, and more)
-- Charge, Source, and Event APIs
+- Multiple payment methods (Credit Card, PromptPay, Rabbit LINE Pay, and more)
+- Multi-currency support (THB, USD, EUR, GBP, JPY, SGD, and more)
+- Token, Customer, Charge, Source, and Event APIs
+- 3D Secure authentication support
 - Webhook signature verification
 - Type-safe with full IDE support
 
 ## Supported Payment Methods
 
-| Payment Method       | Type              | Country  | Currency | Limits         | Staths            |
-|----------------------|-------------------|----------|----------|----------------|-------------------|
-| **PromptPay**        | QR Code (Offline) | Thailand | THB      | 20 - 150,000   | Ready             |
-| **Rabbit LINE Pay**  | Redirect          | Thailand | THB      | 20 - 150,000   | Ready             |
-| **TrueMoney Wallet** | Redirect          | Thailand | THB      | 20 - 30,000    | Under development |
-| **Internet Banking** | Redirect          | Thailand | THB      | Varies by bank | Under development |
-| **Mobile Banking**   | App Redirect      | Thailand | THB      | Varies by bank | Under development |
-| **Alipay**           | Redirect          | China    | THB      | 20 - 150,000   | Under development |
-| **GrabPay**          | App Redirect      | Thailand | THB      | 20 - 150,000   | Under development |
-| **ShopeePay**        | App Redirect      | Thailand | THB      | 20 - 150,000   | Under development |
+| Payment Method       | Type              | Country       | Currency      | Limits         | Status            |
+|----------------------|-------------------|---------------|---------------|----------------|-------------------|
+| **Credit Card**      | Card/3DS          | Multi-country | Multi         | Varies         | Ready             |
+| **PromptPay**        | QR Code (Offline) | Thailand      | THB           | 20 - 150,000   | Ready             |
+| **Rabbit LINE Pay**  | Redirect          | Thailand      | THB           | 20 - 150,000   | Ready             |
+| **TrueMoney Wallet** | Redirect          | Thailand      | THB           | 20 - 30,000    | Under development |
+| **Internet Banking** | Redirect          | Thailand      | THB           | Varies by bank | Under development |
+| **Mobile Banking**   | App Redirect      | Thailand      | THB           | Varies by bank | Under development |
+| **Alipay**           | Redirect          | China         | THB           | 20 - 150,000   | Under development |
+| **GrabPay**          | App Redirect      | Thailand      | THB           | 20 - 150,000   | Under development |
+| **ShopeePay**        | App Redirect      | Thailand      | THB           | 20 - 150,000   | Under development |
+
+### Supported Currencies (Multi-Currency)
+
+| Currency | Country     | Limits (min - max) |
+|----------|-------------|-------------------|
+| THB      | Thailand    | 20 - 150,000      |
+| USD      | USA         | 1 - 50,000        |
+| EUR      | Europe      | 1 - 50,000        |
+| GBP      | UK          | 1 - 50,000        |
+| JPY      | Japan       | 100 - 6,000,000   |
+| SGD      | Singapore   | 1 - 20,000        |
+| MYR      | Malaysia    | 1 - 30,000        |
+| AUD      | Australia   | 1 - 50,000        |
+| CAD      | Canada      | 1 - 50,000        |
+| HKD      | Hong Kong   | 1 - 500,000       |
+
+> **Note:** Multi-currency requires activation. Contact support@omise.co to enable.
 
 ### Supported Banks (Internet Banking)
 
@@ -54,6 +74,9 @@ $omise = new Omise([
     'secret_key' => 'skey_...',
 ]);
 
+// Credit Card payment (with 3D Secure)
+$charge = $omise->payWithCard($tokenId, 100.00, 'THB', 'https://your-site.com/3ds');
+
 // PromptPay - QR Code payment (100 THB)
 $charge = $omise->payWithPromptPay(100.00);
 $qrCodeUrl = $omise->promptPay()->getQrCodeUrl($charge);
@@ -61,7 +84,6 @@ $qrCodeUrl = $omise->promptPay()->getQrCodeUrl($charge);
 // Rabbit LINE Pay - Redirect payment (100 THB)
 $charge = $omise->payWithRabbitLinePay(100.00, 'https://your-site.com/callback');
 $authorizeUrl = $omise->rabbitLinePay()->getAuthorizeUri($charge);
-// Redirect customer to $authorizeUrl
 ```
 
 ### Laravel
@@ -250,6 +272,152 @@ public function paymentCallback(Request $request)
 | `payment_cancelled` | ผู้ซื้อยกเลิกการชำระเงิน | Payment was cancelled by customer |
 | `timeout` | หมดเวลาในการชำระเงิน | Payment timed out |
 
+## Credit Card Usage
+
+Accept credit/debit card payments with support for 3D Secure authentication and multi-currency.
+
+### Creating a Token
+
+First, create a token from card details (typically done client-side with Omise.js):
+
+```php
+use Omise\Omise;
+
+$omise = new Omise([
+    'public_key' => 'pkey_...',
+    'secret_key' => 'skey_...',
+]);
+
+// Create a card token (server-side - for testing only)
+$token = $omise->tokens()->createFromCard(
+    name: 'John Doe',
+    number: '4242424242424242',
+    expirationMonth: 12,
+    expirationYear: 2025,
+    securityCode: '123'
+);
+
+$tokenId = $token->getId(); // tokn_test_...
+```
+
+### Charging a Card
+
+```php
+// Simple charge with token
+$charge = $omise->payWithCard(
+    tokenId: $tokenId,
+    amount: 100.00,         // 100 THB
+    currency: 'THB',
+    returnUri: 'https://your-site.com/3ds-callback'  // For 3D Secure
+);
+
+// Check if 3D Secure is required
+if ($omise->creditCard()->requires3DSecure($charge)) {
+    // Redirect customer to 3DS page
+    $authorizeUrl = $omise->creditCard()->getAuthorizeUri($charge);
+    header("Location: {$authorizeUrl}");
+    exit;
+}
+
+// Check payment status
+if ($omise->creditCard()->isSuccessful($charge)) {
+    // Payment successful
+}
+```
+
+### Multi-Currency Payments
+
+```php
+// Charge in USD (will settle in your funding currency)
+$charge = $omise->creditCard()->pay(
+    tokenId: $tokenId,
+    amount: 50.00,       // 50 USD
+    currency: 'USD',
+    returnUri: 'https://your-site.com/callback'
+);
+
+// Check multi-currency details
+if ($omise->creditCard()->isMultiCurrency($charge)) {
+    $fundingAmount = $omise->creditCard()->getFundingAmount($charge);   // Amount in THB
+    $fundingCurrency = $omise->creditCard()->getFundingCurrency($charge); // 'THB'
+}
+```
+
+### Authorization and Capture
+
+For two-step payments (authorize first, capture later):
+
+```php
+// Step 1: Authorize only (no capture)
+$charge = $omise->creditCard()->authorize(
+    tokenId: $tokenId,
+    amount: 10000,     // 100 THB in satang
+    currency: 'THB',
+    returnUri: 'https://your-site.com/callback'
+);
+
+// Check if authorized
+if ($omise->creditCard()->isAuthorized($charge)) {
+    // Card is authorized, capture later
+}
+
+// Step 2: Capture the authorized charge
+$charge = $omise->creditCard()->capture($charge->getId());
+
+// Or capture partial amount
+$charge = $omise->creditCard()->capture($charge->getId(), 5000); // Capture 50 THB
+
+// Reverse (void) an uncaptured charge
+$charge = $omise->creditCard()->reverse($charge->getId());
+```
+
+### Saved Cards (Customer)
+
+Save cards for recurring payments:
+
+```php
+// Create a customer with a card
+$customer = $omise->customers()->createWithCard(
+    email: 'customer@example.com',
+    tokenId: $tokenId,
+    description: 'John Doe'
+);
+
+$customerId = $customer->getId(); // cust_test_...
+
+// Charge customer's default card
+$charge = $omise->creditCard()->chargeCustomer(
+    customerId: $customerId,
+    amount: 10000,
+    currency: 'THB'
+);
+
+// Add another card to customer
+$omise->customers()->addCard($customerId, $newTokenId);
+
+// Charge a specific card
+$cards = $omise->customers()->getCards($customer);
+$cardId = $cards[0]['id'];
+
+$charge = $omise->creditCard()->chargeCustomerCard(
+    customerId: $customerId,
+    cardId: $cardId,
+    amount: 10000,
+    currency: 'THB'
+);
+```
+
+### Card Failure Codes
+
+| Code | Thai Message | English Message |
+|------|--------------|-----------------|
+| `invalid_card` | บัตรไม่ถูกต้อง | Invalid card |
+| `insufficient_fund` | วงเงินไม่เพียงพอ | Insufficient funds |
+| `stolen_or_lost_card` | บัตรถูกแจ้งหาย | Card reported as stolen or lost |
+| `failed_fraud_check` | ไม่ผ่านการตรวจสอบความปลอดภัย | Failed fraud check |
+| `invalid_security_code` | รหัสความปลอดภัยไม่ถูกต้อง | Invalid security code |
+| `payment_rejected` | การชำระเงินถูกปฏิเสธ | Payment rejected |
+
 ## Charge API
 
 ```php
@@ -410,6 +578,7 @@ $omise = new Omise([
     'webhook_secret' => 'whsec_...',          // For webhook verification
     'timeout' => 30,                          // Request timeout in seconds
     'ssl_verify' => true,                     // Verify SSL certificates
+    'default_currency' => 'THB',              // Default currency for payments
 ]);
 ```
 
@@ -426,6 +595,7 @@ Expected variables:
 - `OMISE_SECRET_KEY`
 - `OMISE_WEBHOOK_SECRET` (optional)
 - `OMISE_MODE` (optional, default: 'live')
+- `OMISE_DEFAULT_CURRENCY` (optional, default: 'THB')
 
 ## Error Handling
 
@@ -484,13 +654,19 @@ composer test
 | `charges()` | Get Charge API |
 | `sources()` | Get Source API |
 | `events()` | Get Event API |
+| `tokens()` | Get Token API |
+| `customers()` | Get Customer API |
 | `promptPay()` | Get PromptPay payment method |
 | `rabbitLinePay()` | Get Rabbit LINE Pay payment method |
+| `creditCard()` | Get Credit Card payment method |
 | `webhooks()` | Get webhook handler |
 | `payWithPromptPay($amount, $webhooks)` | Quick PromptPay payment |
 | `payWithRabbitLinePay($amount, $returnUri, $webhooks)` | Quick Rabbit LINE Pay payment |
+| `payWithCard($tokenId, $amount, $currency, $returnUri)` | Quick credit card payment |
 | `getCharge($id)` | Retrieve a charge |
 | `getEvent($id)` | Retrieve an event |
+| `getCustomer($id)` | Retrieve a customer |
+| `getDefaultCurrency()` | Get the default currency |
 | `isTestMode()` | Check if in test mode |
 | `isLiveMode()` | Check if in live mode |
 
@@ -526,6 +702,47 @@ composer test
 | `getRefundDeadline($charge)` | Get refund deadline date |
 | `getFailureCode($charge)` | Get failure code |
 | `getFailureMessage($charge, $locale)` | Get failure message ('th' or 'en') |
+
+### Credit Card
+
+| Method | Description |
+|--------|-------------|
+| `createToken($name, $number, $month, $year, $cvv)` | Create a card token |
+| `pay($tokenId, $amount, $currency, $returnUri)` | Charge a card |
+| `chargeToken($tokenId, $amount, $currency, $options)` | Charge with options |
+| `chargeCustomer($customerId, $amount, $currency)` | Charge customer's default card |
+| `chargeCustomerCard($customerId, $cardId, $amount, $currency)` | Charge specific card |
+| `authorize($tokenId, $amount, $currency)` | Authorize without capture |
+| `capture($chargeId, $amount)` | Capture an authorized charge |
+| `reverse($chargeId)` | Void an uncaptured charge |
+| `requires3DSecure($charge)` | Check if 3DS is required |
+| `getAuthorizeUri($charge)` | Get 3DS redirect URL |
+| `isAuthorized($charge)` | Check if authorized |
+| `isCapturable($charge)` | Check if can capture |
+| `isPending($charge)` | Check if pending |
+| `isSuccessful($charge)` | Check if successful |
+| `isFailed($charge)` | Check if failed |
+| `isRefundable($charge)` | Check if refundable |
+| `getCardBrand($charge)` | Get card brand (Visa, etc.) |
+| `getCardLastDigits($charge)` | Get last 4 digits |
+| `getFundingAmount($charge)` | Get settlement amount |
+| `getFundingCurrency($charge)` | Get settlement currency |
+| `isMultiCurrency($charge)` | Check if multi-currency |
+| `getFailureCode($charge)` | Get failure code |
+| `getFailureMessage($charge, $locale)` | Get failure message |
+
+### Currency Helper
+
+| Method | Description |
+|--------|-------------|
+| `Currency::isSupported($currency)` | Check if currency is supported |
+| `Currency::toSmallestUnit($amount, $currency)` | Convert to smallest unit |
+| `Currency::toMainUnit($amount, $currency)` | Convert to main unit |
+| `Currency::format($amount, $currency)` | Format with symbol |
+| `Currency::getSymbol($currency)` | Get currency symbol |
+| `Currency::getMinimumAmount($currency)` | Get minimum in smallest unit |
+| `Currency::getMaximumAmount($currency)` | Get maximum in smallest unit |
+| `Currency::validateAmount($amount, $currency)` | Validate amount limits |
 
 ## License
 

@@ -24,6 +24,8 @@ class HttpClient
 
     private const string USER_AGENT = 'OmisePHP/1.0.0';
 
+    private ?Client $vaultClient = null;
+
     public function __construct(Config $config, ?LoggerInterface $logger = null)
     {
         $this->config = $config;
@@ -35,6 +37,23 @@ class HttpClient
             'verify' => $config->shouldVerifySsl(),
             'http_errors' => false,
         ]);
+    }
+
+    /**
+     * Get the vault client for token operations.
+     */
+    private function getVaultClient(): Client
+    {
+        if ($this->vaultClient === null) {
+            $this->vaultClient = new Client([
+                'base_uri' => $this->config->getVaultUrl(),
+                'timeout' => $this->config->getTimeout(),
+                'verify' => $this->config->shouldVerifySsl(),
+                'http_errors' => false,
+            ]);
+        }
+
+        return $this->vaultClient;
     }
 
     /**
@@ -88,19 +107,41 @@ class HttpClient
     }
 
     /**
+     * Make a POST request to the Vault API (for token creation).
+     *
+     * @throws ApiException
+     */
+    public function vaultPost(string $endpoint, array $data = []): array
+    {
+        return $this->request('POST', $endpoint, ['form_params' => $data], true, true);
+    }
+
+    /**
+     * Make a GET request to the Vault API (for token retrieval).
+     *
+     * @throws ApiException
+     */
+    public function vaultGet(string $endpoint, array $params = []): array
+    {
+        return $this->request('GET', $endpoint, ['query' => $params], true, true);
+    }
+
+    /**
      * Make an HTTP request to the Omise API.
      *
      * @throws ApiException
      */
-    private function request(string $method, string $endpoint, array $options = [], bool $usePublicKey = false): array
+    private function request(string $method, string $endpoint, array $options = [], bool $usePublicKey = false, bool $useVault = false): array
     {
         $key = $usePublicKey ? $this->config->getPublicKey() : $this->config->getSecretKey();
+
+        $contentType = isset($options['form_params']) ? 'application/x-www-form-urlencoded' : 'application/json';
 
         $defaultOptions = [
             'headers' => [
                 'User-Agent' => self::USER_AGENT,
                 'Accept' => 'application/json',
-                'Content-Type' => 'application/json',
+                'Content-Type' => $contentType,
             ],
             'auth' => [$key, ''],
         ];
@@ -111,10 +152,13 @@ class HttpClient
             'method' => $method,
             'endpoint' => $endpoint,
             'use_public_key' => $usePublicKey,
+            'use_vault' => $useVault,
         ]);
 
+        $client = $useVault ? $this->getVaultClient() : $this->client;
+
         try {
-            $response = $this->client->request($method, $endpoint, $options);
+            $response = $client->request($method, $endpoint, $options);
 
             return $this->handleResponse($response);
         } catch (RequestException $e) {
