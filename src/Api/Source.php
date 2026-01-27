@@ -32,6 +32,7 @@ class Source extends ApiResource
     public const string TYPE_ALIPAY_HK = 'alipay_hk';
     public const string TYPE_GRABPAY = 'grabpay';
     public const string TYPE_SHOPEEPAY = 'shopeepay';
+    public const string TYPE_SHOPEEPAY_JUMPAPP = 'shopeepay_jumpapp';
     public const string TYPE_RABBIT_LINEPAY = 'rabbit_linepay';
     public const string TYPE_INTERNET_BANKING_BAY = 'internet_banking_bay';
     public const string TYPE_INTERNET_BANKING_BBL = 'internet_banking_bbl';
@@ -169,7 +170,7 @@ class Source extends ApiResource
 
         $appRedirectTypes = [
             self::TYPE_TRUEMONEY,
-            self::TYPE_SHOPEEPAY,
+            self::TYPE_SHOPEEPAY_JUMPAPP,
             self::TYPE_GRABPAY,
             self::TYPE_RABBIT_LINEPAY,
             self::TYPE_MOBILE_BANKING_BAY,
@@ -180,12 +181,20 @@ class Source extends ApiResource
             self::TYPE_MOBILE_BANKING_OCBC,
         ];
 
+        $redirectTypes = [
+            self::TYPE_SHOPEEPAY,
+        ];
+
         if (in_array($sourceType, $offlineTypes, true)) {
             return self::FLOW_OFFLINE;
         }
 
         if (in_array($sourceType, $appRedirectTypes, true)) {
             return self::FLOW_APP_REDIRECT;
+        }
+
+        if (in_array($sourceType, $redirectTypes, true)) {
+            return self::FLOW_REDIRECT;
         }
 
         return self::FLOW_REDIRECT;
@@ -208,6 +217,7 @@ class Source extends ApiResource
             self::TYPE_PROMPTPAY,
             self::TYPE_TRUEMONEY,
             self::TYPE_SHOPEEPAY,
+            self::TYPE_SHOPEEPAY_JUMPAPP,
             self::TYPE_GRABPAY,
             self::TYPE_RABBIT_LINEPAY,
             self::TYPE_INTERNET_BANKING_BAY,
@@ -223,11 +233,19 @@ class Source extends ApiResource
 
         $sgdTypes = [
             self::TYPE_MOBILE_BANKING_OCBC,
+            self::TYPE_SHOPEEPAY,
+            self::TYPE_SHOPEEPAY_JUMPAPP,
+        ];
+
+        $myrTypes = [
+            self::TYPE_SHOPEEPAY,
+            self::TYPE_SHOPEEPAY_JUMPAPP,
         ];
 
         return match (strtoupper($currency)) {
             'THB' => $thbTypes,
             'SGD' => $sgdTypes,
+            'MYR' => $myrTypes,
             default => [],
         };
     }

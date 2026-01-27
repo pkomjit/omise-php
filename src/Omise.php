@@ -19,6 +19,8 @@ use Omise\PaymentMethods\DirectDebit;
 use Omise\PaymentMethods\MobileBanking;
 use Omise\PaymentMethods\PromptPay;
 use Omise\PaymentMethods\RabbitLinePay;
+use Omise\PaymentMethods\ShopeepayJumpApp;
+use Omise\PaymentMethods\ShopeepayQR;
 use Omise\PaymentMethods\TruemoneyJumpApp;
 use Omise\PaymentMethods\TruemoneyQR;
 use Omise\Webhook\SignatureVerifier;
@@ -62,6 +64,8 @@ class Omise
     private ?TruemoneyQR $truemoneyQR = null;
     private ?TruemoneyJumpApp $truemoneyJumpApp = null;
     private ?MobileBanking $mobileBanking = null;
+    private ?ShopeepayQR $shopeepayQR = null;
+    private ?ShopeepayJumpApp $shopeepayJumpApp = null;
 
     // Webhook handler instance
     private ?WebhookHandler $webhookHandler = null;
@@ -271,6 +275,30 @@ class Omise
         return $this->mobileBanking;
     }
 
+    /**
+     * Get the ShopeePay QR payment method.
+     */
+    public function shopeepayQR(): ShopeepayQR
+    {
+        if ($this->shopeepayQR === null) {
+            $this->shopeepayQR = new ShopeepayQR($this->charges(), $this->sources());
+        }
+
+        return $this->shopeepayQR;
+    }
+
+    /**
+     * Get the ShopeePay Jump App payment method.
+     */
+    public function shopeepayJumpApp(): ShopeepayJumpApp
+    {
+        if ($this->shopeepayJumpApp === null) {
+            $this->shopeepayJumpApp = new ShopeepayJumpApp($this->charges(), $this->sources());
+        }
+
+        return $this->shopeepayJumpApp;
+    }
+
     // =========================================================================
     // Webhook Handling
     // =========================================================================
@@ -401,6 +429,44 @@ class Omise
         array $options = []
     ): Response {
         return $this->mobileBanking()->pay($bankType, $amount, $returnUri, $options);
+    }
+
+    /**
+     * Create a ShopeePay QR charge with a simple interface.
+     *
+     * @param  float $amount  Amount in main currency unit
+     * @param  string $currency  Currency code (THB, SGD, MYR)
+     * @param  string $returnUri  URL to redirect after payment
+     * @param  array $webhookEndpoints  Optional webhook URLs
+     * @return Response The charge response with authorize_uri for redirect
+     * @throws ApiException
+     */
+    public function payWithShopeepayQR(
+        float $amount,
+        string $currency,
+        string $returnUri,
+        array $webhookEndpoints = []
+    ): Response {
+        return $this->shopeepayQR()->pay($amount, $currency, $returnUri, $webhookEndpoints);
+    }
+
+    /**
+     * Create a ShopeePay Jump App charge with a simple interface.
+     *
+     * @param  float $amount  Amount in main currency unit
+     * @param  string $currency  Currency code (THB, SGD, MYR)
+     * @param  string $returnUri  URL to redirect after payment
+     * @param  array $options  Additional options (platform_type, webhook_endpoints, etc.)
+     * @return Response The charge response with authorize_uri for app redirect
+     * @throws ApiException
+     */
+    public function payWithShopeepayJumpApp(
+        float $amount,
+        string $currency,
+        string $returnUri,
+        array $options = []
+    ): Response {
+        return $this->shopeepayJumpApp()->pay($amount, $currency, $returnUri, $options);
     }
 
     /**

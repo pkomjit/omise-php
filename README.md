@@ -6,7 +6,7 @@ A PHP SDK for [Omise](https://www.omise.co/) payment gateway integration. Suppor
 
 - PHP 8.3+ support
 - Works with or without Laravel
-- Multiple payment methods (Credit Card, PromptPay, TrueMoney, Rabbit LINE Pay, Direct Debit, Mobile Banking)
+- Multiple payment methods (Credit Card, PromptPay, TrueMoney, Rabbit LINE Pay, Direct Debit, Mobile Banking, ShopeePay)
 - Multi-currency support (THB, USD, EUR, GBP, JPY, SGD, and more)
 - Token, Customer, Charge, Source, and Event APIs
 - 3D Secure authentication support
@@ -22,6 +22,8 @@ A PHP SDK for [Omise](https://www.omise.co/) payment gateway integration. Suppor
 | **Rabbit LINE Pay** | Redirect | Thailand | THB | 20 - 150,000 THB | [docs/rabbit-linepay.md](docs/rabbit-linepay.md) |
 | **Direct Debit** | Bank Link | Thailand | THB | 20 - 150,000 THB | [docs/direct-debit.md](docs/direct-debit.md) |
 | **Mobile Banking** | App Redirect | Thailand/Singapore | THB/SGD | Varies by bank | [docs/mobile-banking.md](docs/mobile-banking.md) |
+| **ShopeePay QR** | Redirect | Thailand/Singapore/Malaysia | THB/SGD/MYR | Varies by country | [docs/shopeepay-qr.md](docs/shopeepay-qr.md) |
+| **ShopeePay App** | App Redirect | Thailand/Singapore/Malaysia | THB/SGD/MYR | Varies by country | [docs/shopeepay-jumpapp.md](docs/shopeepay-jumpapp.md) |
 | **TrueMoney QR** | QR Code | Thailand | THB | 100 - 50,000 THB | [docs/truemoney-qr.md](docs/truemoney-qr.md) |
 | **TrueMoney App** | App Redirect | Thailand | THB | 100 - 50,000 THB | [docs/truemoney-jumpapp.md](docs/truemoney-jumpapp.md) |
 
@@ -122,6 +124,14 @@ $charge = $omise->payWithMobileBanking(
     'https://your-site.com/callback'
 );
 $authorizeUrl = $omise->mobileBanking()->getAuthorizeUri($charge);
+
+// ShopeePay QR - Redirect payment
+$charge = $omise->payWithShopeepayQR(100.00, 'THB', 'https://your-site.com/callback');
+$authorizeUrl = $omise->shopeepayQR()->getAuthorizeUri($charge);
+
+// ShopeePay App - App redirect payment
+$charge = $omise->payWithShopeepayJumpApp(100.00, 'THB', 'https://your-site.com/callback');
+$authorizeUrl = $omise->shopeepayJumpApp()->getAuthorizeUri($charge);
 ```
 
 ### Laravel
@@ -165,6 +175,14 @@ $charge = Omise::payWithMobileBanking(
     route('payment.callback')
 );
 return redirect(Omise::mobileBanking()->getAuthorizeUri($charge));
+
+// ShopeePay QR - Redirect payment
+$charge = Omise::payWithShopeepayQR(100.00, 'THB', route('payment.callback'));
+return redirect(Omise::shopeepayQR()->getAuthorizeUri($charge));
+
+// ShopeePay App - App redirect payment
+$charge = Omise::payWithShopeepayJumpApp(100.00, 'THB', route('payment.callback'));
+return redirect(Omise::shopeepayJumpApp()->getAuthorizeUri($charge));
 ```
 
 Or use dependency injection:
@@ -197,6 +215,8 @@ For detailed usage of each payment method, see the documentation in the `docs/` 
 - [Rabbit LINE Pay](docs/rabbit-linepay.md) - LINE app wallet payments
 - [Direct Debit](docs/direct-debit.md) - Bank account linking for recurring payments
 - [Mobile Banking](docs/mobile-banking.md) - Bank app redirect payments (Thailand/Singapore)
+- [ShopeePay QR](docs/shopeepay-qr.md) - ShopeePay QR code payments (Thailand/Singapore/Malaysia)
+- [ShopeePay App](docs/shopeepay-jumpapp.md) - ShopeePay app redirect payments (Thailand/Singapore/Malaysia)
 - [TrueMoney QR](docs/truemoney-qr.md) - TrueMoney QR code payments
 - [TrueMoney App](docs/truemoney-jumpapp.md) - TrueMoney app redirect payments
 
@@ -446,6 +466,8 @@ composer test
 | `truemoneyQR()` | Get TrueMoney QR payment method |
 | `truemoneyJumpApp()` | Get TrueMoney Jump App payment method |
 | `mobileBanking()` | Get Mobile Banking payment method |
+| `shopeepayQR()` | Get ShopeePay QR payment method |
+| `shopeepayJumpApp()` | Get ShopeePay Jump App payment method |
 | `webhooks()` | Get webhook handler |
 | `payWithPromptPay($amount, $webhooks)` | Quick PromptPay payment |
 | `payWithRabbitLinePay($amount, $returnUri, $webhooks)` | Quick Rabbit LINE Pay payment |
@@ -453,6 +475,8 @@ composer test
 | `payWithTruemoneyQR($amount, $webhooks)` | Quick TrueMoney QR payment |
 | `payWithTruemoneyJumpApp($amount, $returnUri, $webhooks)` | Quick TrueMoney App payment |
 | `payWithMobileBanking($bankType, $amount, $returnUri, $options)` | Quick Mobile Banking payment |
+| `payWithShopeepayQR($amount, $currency, $returnUri, $webhooks)` | Quick ShopeePay QR payment |
+| `payWithShopeepayJumpApp($amount, $currency, $returnUri, $options)` | Quick ShopeePay App payment |
 | `getCharge($id)` | Retrieve a charge |
 | `getEvent($id)` | Retrieve an event |
 | `getCustomer($id)` | Retrieve a customer |
