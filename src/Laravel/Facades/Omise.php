@@ -5,12 +5,29 @@ declare(strict_types=1);
 namespace Omise\Laravel\Facades;
 
 use Illuminate\Support\Facades\Facade;
+use Omise\Api\Account;
+use Omise\Api\Balance;
+use Omise\Api\Capability;
+use Omise\Api\Card;
+use Omise\Api\Chain;
 use Omise\Api\Charge;
 use Omise\Api\Customer;
+use Omise\Api\Dispute;
+use Omise\Api\Document;
 use Omise\Api\Event;
+use Omise\Api\Forex;
+use Omise\Api\Link;
 use Omise\Api\LinkedAccount;
+use Omise\Api\Occurrence;
+use Omise\Api\Receipt;
+use Omise\Api\Recipient;
+use Omise\Api\Refund;
+use Omise\Api\Schedule;
+use Omise\Api\Search;
 use Omise\Api\Source;
 use Omise\Api\Token;
+use Omise\Api\Transaction;
+use Omise\Api\Transfer;
 use Omise\Config;
 use Omise\Http\HttpClient;
 use Omise\Http\Response;
@@ -28,12 +45,32 @@ use Omise\Webhook\WebhookHandler;
 /**
  * Facade for the Omise SDK.
  *
+ * Core APIs
+ * @method static Account account()
+ * @method static Balance balance()
+ * @method static Capability capability()
+ * @method static Card cards()
+ * @method static Chain chains()
  * @method static Charge charges()
- * @method static Source sources()
- * @method static Event events()
- * @method static Token tokens()
  * @method static Customer customers()
+ * @method static Dispute disputes()
+ * @method static Document documents()
+ * @method static Event events()
+ * @method static Forex forex()
+ * @method static Link links()
  * @method static LinkedAccount linkedAccounts()
+ * @method static Occurrence occurrences()
+ * @method static Receipt receipts()
+ * @method static Recipient recipients()
+ * @method static Refund refunds()
+ * @method static Schedule schedules()
+ * @method static Search search()
+ * @method static Source sources()
+ * @method static Token tokens()
+ * @method static Transaction transactions()
+ * @method static Transfer transfers()
+ *
+ * Payment Methods
  * @method static PromptPay promptPay()
  * @method static RabbitLinePay rabbitLinePay()
  * @method static CreditCard creditCard()
@@ -43,7 +80,11 @@ use Omise\Webhook\WebhookHandler;
  * @method static MobileBanking mobileBanking()
  * @method static ShopeepayQR shopeepayQR()
  * @method static ShopeepayJumpApp shopeepayJumpApp()
+ *
+ * Webhooks
  * @method static WebhookHandler webhooks()
+ *
+ * Convenience Methods
  * @method static Response payWithPromptPay(float $amount, array $webhookEndpoints = [])
  * @method static Response payWithRabbitLinePay(float $amount, string $returnUri, array $webhookEndpoints = [])
  * @method static Response payWithCard(string $tokenId, float $amount, string $currency = 'THB', ?string $returnUri = null)

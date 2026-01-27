@@ -12,7 +12,7 @@ use Omise\Http\Response;
  *
  * Events represent webhook notifications that Omise sends to your application.
  *
- * @see https://docs.omise.co/api-events
+ * @see https://docs.omise.co/events-api
  */
 class Event extends ApiResource
 {
@@ -60,9 +60,9 @@ class Event extends ApiResource
      * Retrieve an event by ID.
      * @throws ApiException
      */
-    public function retrieve(string $eventId): Response
+    public function retrieve(string $id): Response
     {
-        return parent::retrieve($eventId);
+        return parent::retrieve($id);
     }
 
     /**

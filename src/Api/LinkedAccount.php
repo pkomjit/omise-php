@@ -100,9 +100,9 @@ class LinkedAccount extends ApiResource
      *
      * @throws ApiException
      */
-    public function retrieve(string $linkedAccountId): Response
+    public function retrieve(string $id): Response
     {
-        return parent::retrieve($linkedAccountId);
+        return parent::retrieve($id);
     }
 
     /**

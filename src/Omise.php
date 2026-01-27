@@ -4,12 +4,29 @@ declare(strict_types=1);
 
 namespace Omise;
 
+use Omise\Api\Account;
+use Omise\Api\Balance;
+use Omise\Api\Capability;
+use Omise\Api\Card;
+use Omise\Api\Chain;
 use Omise\Api\Charge;
 use Omise\Api\Customer;
+use Omise\Api\Dispute;
+use Omise\Api\Document;
 use Omise\Api\Event;
+use Omise\Api\Forex;
+use Omise\Api\Link;
 use Omise\Api\LinkedAccount;
+use Omise\Api\Occurrence;
+use Omise\Api\Receipt;
+use Omise\Api\Recipient;
+use Omise\Api\Refund;
+use Omise\Api\Schedule;
+use Omise\Api\Search;
 use Omise\Api\Source;
 use Omise\Api\Token;
+use Omise\Api\Transaction;
+use Omise\Api\Transfer;
 use Omise\Exceptions\ApiException;
 use Omise\Exceptions\ConfigurationException;
 use Omise\Http\HttpClient;
@@ -49,12 +66,29 @@ class Omise
     private ?LoggerInterface $logger;
 
     // API instances (lazy-loaded)
+    private ?Account $accountApi = null;
+    private ?Balance $balanceApi = null;
+    private ?Capability $capabilityApi = null;
+    private ?Card $cardApi = null;
+    private ?Chain $chainApi = null;
     private ?Charge $chargeApi = null;
-    private ?Source $sourceApi = null;
-    private ?Event $eventApi = null;
-    private ?Token $tokenApi = null;
     private ?Customer $customerApi = null;
+    private ?Dispute $disputeApi = null;
+    private ?Document $documentApi = null;
+    private ?Event $eventApi = null;
+    private ?Forex $forexApi = null;
+    private ?Link $linkApi = null;
     private ?LinkedAccount $linkedAccountApi = null;
+    private ?Occurrence $occurrenceApi = null;
+    private ?Receipt $receiptApi = null;
+    private ?Recipient $recipientApi = null;
+    private ?Refund $refundApi = null;
+    private ?Schedule $scheduleApi = null;
+    private ?Search $searchApi = null;
+    private ?Source $sourceApi = null;
+    private ?Token $tokenApi = null;
+    private ?Transaction $transactionApi = null;
+    private ?Transfer $transferApi = null;
 
     // Payment method instances (lazy-loaded)
     private ?PromptPay $promptPay = null;
@@ -185,6 +219,210 @@ class Omise
         }
 
         return $this->linkedAccountApi;
+    }
+
+    /**
+     * Get the Account API.
+     */
+    public function account(): Account
+    {
+        if ($this->accountApi === null) {
+            $this->accountApi = new Account($this->httpClient);
+        }
+
+        return $this->accountApi;
+    }
+
+    /**
+     * Get the Balance API.
+     */
+    public function balance(): Balance
+    {
+        if ($this->balanceApi === null) {
+            $this->balanceApi = new Balance($this->httpClient);
+        }
+
+        return $this->balanceApi;
+    }
+
+    /**
+     * Get the Capability API.
+     */
+    public function capability(): Capability
+    {
+        if ($this->capabilityApi === null) {
+            $this->capabilityApi = new Capability($this->httpClient);
+        }
+
+        return $this->capabilityApi;
+    }
+
+    /**
+     * Get the Card API.
+     */
+    public function cards(): Card
+    {
+        if ($this->cardApi === null) {
+            $this->cardApi = new Card($this->httpClient);
+        }
+
+        return $this->cardApi;
+    }
+
+    /**
+     * Get the Chain API.
+     */
+    public function chains(): Chain
+    {
+        if ($this->chainApi === null) {
+            $this->chainApi = new Chain($this->httpClient);
+        }
+
+        return $this->chainApi;
+    }
+
+    /**
+     * Get the Dispute API.
+     */
+    public function disputes(): Dispute
+    {
+        if ($this->disputeApi === null) {
+            $this->disputeApi = new Dispute($this->httpClient);
+        }
+
+        return $this->disputeApi;
+    }
+
+    /**
+     * Get the Document API.
+     */
+    public function documents(): Document
+    {
+        if ($this->documentApi === null) {
+            $this->documentApi = new Document($this->httpClient);
+        }
+
+        return $this->documentApi;
+    }
+
+    /**
+     * Get the Forex API.
+     */
+    public function forex(): Forex
+    {
+        if ($this->forexApi === null) {
+            $this->forexApi = new Forex($this->httpClient);
+        }
+
+        return $this->forexApi;
+    }
+
+    /**
+     * Get the Link API.
+     */
+    public function links(): Link
+    {
+        if ($this->linkApi === null) {
+            $this->linkApi = new Link($this->httpClient);
+        }
+
+        return $this->linkApi;
+    }
+
+    /**
+     * Get the Occurrence API.
+     */
+    public function occurrences(): Occurrence
+    {
+        if ($this->occurrenceApi === null) {
+            $this->occurrenceApi = new Occurrence($this->httpClient);
+        }
+
+        return $this->occurrenceApi;
+    }
+
+    /**
+     * Get the Receipt API.
+     */
+    public function receipts(): Receipt
+    {
+        if ($this->receiptApi === null) {
+            $this->receiptApi = new Receipt($this->httpClient);
+        }
+
+        return $this->receiptApi;
+    }
+
+    /**
+     * Get the Recipient API.
+     */
+    public function recipients(): Recipient
+    {
+        if ($this->recipientApi === null) {
+            $this->recipientApi = new Recipient($this->httpClient);
+        }
+
+        return $this->recipientApi;
+    }
+
+    /**
+     * Get the Refund API.
+     */
+    public function refunds(): Refund
+    {
+        if ($this->refundApi === null) {
+            $this->refundApi = new Refund($this->httpClient);
+        }
+
+        return $this->refundApi;
+    }
+
+    /**
+     * Get the Schedule API.
+     */
+    public function schedules(): Schedule
+    {
+        if ($this->scheduleApi === null) {
+            $this->scheduleApi = new Schedule($this->httpClient);
+        }
+
+        return $this->scheduleApi;
+    }
+
+    /**
+     * Get the Search API.
+     */
+    public function search(): Search
+    {
+        if ($this->searchApi === null) {
+            $this->searchApi = new Search($this->httpClient);
+        }
+
+        return $this->searchApi;
+    }
+
+    /**
+     * Get the Transaction API.
+     */
+    public function transactions(): Transaction
+    {
+        if ($this->transactionApi === null) {
+            $this->transactionApi = new Transaction($this->httpClient);
+        }
+
+        return $this->transactionApi;
+    }
+
+    /**
+     * Get the Transfer API.
+     */
+    public function transfers(): Transfer
+    {
+        if ($this->transferApi === null) {
+            $this->transferApi = new Transfer($this->httpClient);
+        }
+
+        return $this->transferApi;
     }
 
     // =========================================================================

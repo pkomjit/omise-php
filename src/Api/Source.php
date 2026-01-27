@@ -13,7 +13,7 @@ use Omise\Http\Response;
  *
  * Sources represent payment method details that can be used to create charges.
  *
- * @see https://docs.omise.co/api-sources
+ * @see https://docs.omise.co/sources-api
  */
 class Source extends ApiResource
 {
@@ -154,9 +154,9 @@ class Source extends ApiResource
      * Retrieve a source by ID.
      * @throws ApiException
      */
-    public function retrieve(string $sourceId): Response
+    public function retrieve(string $id): Response
     {
-        return parent::retrieve($sourceId);
+        return parent::retrieve($id);
     }
 
     /**

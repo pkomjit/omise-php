@@ -68,9 +68,9 @@ class Customer extends ApiResource
      *
      * @throws ApiException
      */
-    public function retrieve(string $customerId): Response
+    public function retrieve(string $id): Response
     {
-        return parent::retrieve($customerId);
+        return parent::retrieve($id);
     }
 
     /**

@@ -4,13 +4,14 @@ declare(strict_types=1);
 
 namespace Omise\Api;
 
+use InvalidArgumentException;
 use Omise\Exceptions\ApiException;
 use Omise\Http\Response;
 
 /**
  * Charge API for creating and managing payment charges.
  *
- * @see https://docs.omise.co/api-charges
+ * @see https://docs.omise.co/charges-api
  */
 class Charge extends ApiResource
 {
@@ -80,21 +81,23 @@ class Charge extends ApiResource
 
     /**
      * Retrieve a charge by ID.
+     * @throws ApiException
      */
-    public function retrieve(string $chargeId): Response
+    public function retrieve(string $id): Response
     {
-        return parent::retrieve($chargeId);
+        return parent::retrieve($id);
     }
 
     /**
      * List all charges with optional filters.
      *
-     * @param array $params Filter parameters:
+     * @param  array $params  Filter parameters:
      *   - offset: Starting offset
      *   - limit: Number of records to return (max 100)
      *   - from: Start date (ISO 8601)
      *   - to: End date (ISO 8601)
      *   - order: Sort order ('chronological' or 'reverse_chronological')
+     * @throws ApiException
      */
     public function all(array $params = []): Response
     {
@@ -236,21 +239,21 @@ class Charge extends ApiResource
     /**
      * Validate required parameters for charge creation.
      *
-     * @throws \InvalidArgumentException
+     * @throws InvalidArgumentException
      */
     private function validateCreateParams(array $params): void
     {
         if (empty($params['amount'])) {
-            throw new \InvalidArgumentException('amount is required');
+            throw new InvalidArgumentException('amount is required');
         }
 
         if (empty($params['currency'])) {
-            throw new \InvalidArgumentException('currency is required');
+            throw new InvalidArgumentException('currency is required');
         }
 
         // At least one of source, card, or customer is required
         if (empty($params['source']) && empty($params['card']) && empty($params['customer'])) {
-            throw new \InvalidArgumentException('One of source, card, or customer is required');
+            throw new InvalidArgumentException('One of source, card, or customer is required');
         }
     }
 }
