@@ -25,6 +25,8 @@ class Source extends ApiResource
      */
     public const string TYPE_PROMPTPAY = 'promptpay';
     public const string TYPE_TRUEMONEY = 'truemoney';
+    public const string TYPE_TRUEMONEY_QR = 'truemoney_qr';
+    public const string TYPE_TRUEMONEY_JUMPAPP = 'truemoney_jumpapp';
     public const string TYPE_ALIPAY = 'alipay';
     public const string TYPE_ALIPAY_CN = 'alipay_cn';
     public const string TYPE_ALIPAY_HK = 'alipay_hk';
@@ -40,6 +42,7 @@ class Source extends ApiResource
     public const string TYPE_MOBILE_BANKING_KTB = 'mobile_banking_ktb';
     public const string TYPE_MOBILE_BANKING_SCB = 'mobile_banking_scb';
     public const string TYPE_MOBILE_BANKING_KBANK = 'mobile_banking_kbank';
+    public const string TYPE_MOBILE_BANKING_OCBC = 'mobile_banking_ocbc';
 
     /**
      * Source flow constants.
@@ -174,6 +177,7 @@ class Source extends ApiResource
             self::TYPE_MOBILE_BANKING_KTB,
             self::TYPE_MOBILE_BANKING_SCB,
             self::TYPE_MOBILE_BANKING_KBANK,
+            self::TYPE_MOBILE_BANKING_OCBC,
         ];
 
         if (in_array($sourceType, $offlineTypes, true)) {
@@ -217,8 +221,13 @@ class Source extends ApiResource
             self::TYPE_MOBILE_BANKING_KBANK,
         ];
 
+        $sgdTypes = [
+            self::TYPE_MOBILE_BANKING_OCBC,
+        ];
+
         return match (strtoupper($currency)) {
             'THB' => $thbTypes,
+            'SGD' => $sgdTypes,
             default => [],
         };
     }

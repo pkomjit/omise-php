@@ -16,8 +16,11 @@ use Omise\Http\HttpClient;
 use Omise\Http\Response;
 use Omise\PaymentMethods\CreditCard;
 use Omise\PaymentMethods\DirectDebit;
+use Omise\PaymentMethods\MobileBanking;
 use Omise\PaymentMethods\PromptPay;
 use Omise\PaymentMethods\RabbitLinePay;
+use Omise\PaymentMethods\TruemoneyJumpApp;
+use Omise\PaymentMethods\TruemoneyQR;
 use Omise\Webhook\WebhookHandler;
 
 /**
@@ -33,10 +36,16 @@ use Omise\Webhook\WebhookHandler;
  * @method static RabbitLinePay rabbitLinePay()
  * @method static CreditCard creditCard()
  * @method static DirectDebit directDebit()
+ * @method static TruemoneyQR truemoneyQR()
+ * @method static TruemoneyJumpApp truemoneyJumpApp()
+ * @method static MobileBanking mobileBanking()
  * @method static WebhookHandler webhooks()
  * @method static Response payWithPromptPay(float $amount, array $webhookEndpoints = [])
  * @method static Response payWithRabbitLinePay(float $amount, string $returnUri, array $webhookEndpoints = [])
  * @method static Response payWithCard(string $tokenId, float $amount, string $currency = 'THB', ?string $returnUri = null)
+ * @method static Response payWithTruemoneyQR(float $amount, array $webhookEndpoints = [])
+ * @method static Response payWithTruemoneyJumpApp(float $amount, string $returnUri, array $webhookEndpoints = [])
+ * @method static Response payWithMobileBanking(string $bankType, float $amount, string $returnUri, array $options = [])
  * @method static Response getCharge(string $chargeId)
  * @method static Response getEvent(string $eventId)
  * @method static Response getCustomer(string $customerId)

@@ -16,8 +16,11 @@ use Omise\Http\HttpClient;
 use Omise\Http\Response;
 use Omise\PaymentMethods\CreditCard;
 use Omise\PaymentMethods\DirectDebit;
+use Omise\PaymentMethods\MobileBanking;
 use Omise\PaymentMethods\PromptPay;
 use Omise\PaymentMethods\RabbitLinePay;
+use Omise\PaymentMethods\TruemoneyJumpApp;
+use Omise\PaymentMethods\TruemoneyQR;
 use Omise\Webhook\SignatureVerifier;
 use Omise\Webhook\WebhookHandler;
 use Psr\Log\LoggerInterface;
@@ -56,6 +59,9 @@ class Omise
     private ?RabbitLinePay $rabbitLinePay = null;
     private ?CreditCard $creditCard = null;
     private ?DirectDebit $directDebit = null;
+    private ?TruemoneyQR $truemoneyQR = null;
+    private ?TruemoneyJumpApp $truemoneyJumpApp = null;
+    private ?MobileBanking $mobileBanking = null;
 
     // Webhook handler instance
     private ?WebhookHandler $webhookHandler = null;
@@ -229,6 +235,42 @@ class Omise
         return $this->directDebit;
     }
 
+    /**
+     * Get the TrueMoney QR payment method.
+     */
+    public function truemoneyQR(): TruemoneyQR
+    {
+        if ($this->truemoneyQR === null) {
+            $this->truemoneyQR = new TruemoneyQR($this->charges(), $this->sources());
+        }
+
+        return $this->truemoneyQR;
+    }
+
+    /**
+     * Get the TrueMoney Jump App payment method.
+     */
+    public function truemoneyJumpApp(): TruemoneyJumpApp
+    {
+        if ($this->truemoneyJumpApp === null) {
+            $this->truemoneyJumpApp = new TruemoneyJumpApp($this->charges(), $this->sources());
+        }
+
+        return $this->truemoneyJumpApp;
+    }
+
+    /**
+     * Get the Mobile Banking payment method.
+     */
+    public function mobileBanking(): MobileBanking
+    {
+        if ($this->mobileBanking === null) {
+            $this->mobileBanking = new MobileBanking($this->charges(), $this->sources());
+        }
+
+        return $this->mobileBanking;
+    }
+
     // =========================================================================
     // Webhook Handling
     // =========================================================================
@@ -313,6 +355,52 @@ class Omise
         ?string $returnUri = null
     ): Response {
         return $this->creditCard()->pay($tokenId, $amount, $currency, $returnUri);
+    }
+
+    /**
+     * Create a TrueMoney QR charge with a simple interface.
+     *
+     * @param  float $amount  Amount in THB
+     * @param  array $webhookEndpoints  Optional webhook URLs
+     * @return Response The charge response with QR code
+     * @throws ApiException
+     */
+    public function payWithTruemoneyQR(float $amount, array $webhookEndpoints = []): Response
+    {
+        return $this->truemoneyQR()->pay($amount, $webhookEndpoints);
+    }
+
+    /**
+     * Create a TrueMoney Jump App charge with a simple interface.
+     *
+     * @param  float $amount  Amount in THB
+     * @param  string $returnUri  URL to redirect after payment
+     * @param  array $webhookEndpoints  Optional webhook URLs
+     * @return Response The charge response with authorize_uri for redirect
+     * @throws ApiException
+     */
+    public function payWithTruemoneyJumpApp(float $amount, string $returnUri, array $webhookEndpoints = []): Response
+    {
+        return $this->truemoneyJumpApp()->pay($amount, $returnUri, $webhookEndpoints);
+    }
+
+    /**
+     * Create a Mobile Banking charge with a simple interface.
+     *
+     * @param  string $bankType  Bank type constant (e.g., MobileBanking::BANK_KBANK)
+     * @param  float $amount  Amount in main currency unit (THB or SGD)
+     * @param  string $returnUri  URL to redirect after payment
+     * @param  array $options  Additional options (platform_type, webhook_endpoints, etc.)
+     * @return Response The charge response with authorize_uri for redirect
+     * @throws ApiException
+     */
+    public function payWithMobileBanking(
+        string $bankType,
+        float $amount,
+        string $returnUri,
+        array $options = []
+    ): Response {
+        return $this->mobileBanking()->pay($bankType, $amount, $returnUri, $options);
     }
 
     /**
