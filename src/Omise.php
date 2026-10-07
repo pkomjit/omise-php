@@ -116,6 +116,7 @@ class Omise
      *   - webhook_secret (optional): Webhook signing secret
      *   - timeout (optional): Request timeout in seconds (default: 30)
      *   - ssl_verify (optional): Verify SSL certificates (default: true)
+     *   - default_currency (optional): Default charge currency (default: THB)
      * @param  LoggerInterface|null $logger  Optional PSR-3 logger
      * @throws ConfigurationException
      */
@@ -142,6 +143,7 @@ class Omise
             'secret_key' => getenv('OMISE_SECRET_KEY') ?: '',
             'webhook_secret' => getenv('OMISE_WEBHOOK_SECRET') ?: null,
             'mode' => getenv('OMISE_MODE') ?: Config::MODE_LIVE,
+            'default_currency' => getenv('OMISE_DEFAULT_CURRENCY') ?: 'THB',
         ], $logger);
     }
 
@@ -547,13 +549,12 @@ class Omise
     public function webhooks(): WebhookHandler
     {
         if ($this->webhookHandler === null) {
-            $secret = $this->config->getWebhookSecret();
-
-            if ($secret !== null) {
-                $this->webhookHandler = WebhookHandler::withVerification($secret);
-            } else {
-                $this->webhookHandler = WebhookHandler::withoutVerification();
-            }
+            // Always verify. Without a configured secret, handle() fails with
+            // WebhookException::missingSecret() instead of accepting unsigned
+            // payloads. Use WebhookHandler::withoutVerification() to opt out.
+            $this->webhookHandler = WebhookHandler::withVerification(
+                $this->config->getWebhookSecret() ?? ''
+            );
         }
 
         return $this->webhookHandler;

@@ -7,6 +7,7 @@ namespace Omise\Http;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\Exception\RequestException;
+use InvalidArgumentException;
 use Omise\Config;
 use Omise\Exceptions\ApiException;
 use Psr\Http\Message\ResponseInterface;
@@ -22,7 +23,7 @@ class HttpClient
     private Config $config;
     private LoggerInterface $logger;
 
-    private const string USER_AGENT = 'OmisePHP/1.0.0';
+    private const string USER_AGENT = 'pkomjit-omise-php/1.0.0';
 
     private ?Client $vaultClient = null;
 
@@ -133,6 +134,8 @@ class HttpClient
      */
     private function request(string $method, string $endpoint, array $options = [], bool $usePublicKey = false, bool $useVault = false): array
     {
+        $this->assertSafeEndpoint($endpoint);
+
         $key = $usePublicKey ? $this->config->getPublicKey() : $this->config->getSecretKey();
 
         $contentType = isset($options['form_params']) ? 'application/x-www-form-urlencoded' : 'application/json';
@@ -142,6 +145,7 @@ class HttpClient
                 'User-Agent' => self::USER_AGENT,
                 'Accept' => 'application/json',
                 'Content-Type' => $contentType,
+                'Omise-Version' => $this->config->getApiVersion(),
             ],
             'auth' => [$key, ''],
         ];
@@ -197,6 +201,22 @@ class HttpClient
                 httpStatusCode: 0,
                 previous: $e
             );
+        }
+    }
+
+    /**
+     * Reject endpoints whose path segments are not plain identifiers.
+     *
+     * Resource IDs are interpolated into the path, so an ID taken from user
+     * input such as "../customers" or "chrg_x?expand=1" could otherwise point
+     * an authenticated request at a different endpoint.
+     *
+     * @throws InvalidArgumentException
+     */
+    private function assertSafeEndpoint(string $endpoint): void
+    {
+        if (preg_match('#^(/[A-Za-z0-9_-]+)+$#', $endpoint) !== 1) {
+            throw new InvalidArgumentException("Invalid API endpoint or resource ID: {$endpoint}");
         }
     }
 

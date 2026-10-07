@@ -41,6 +41,7 @@ class OmiseServiceProvider extends ServiceProvider implements DeferrableProvider
                 'webhook_secret' => config('omise.webhook_secret'),
                 'timeout' => config('omise.timeout', 30),
                 'ssl_verify' => config('omise.ssl_verify', true),
+                'default_currency' => config('omise.default_currency', 'THB'),
             ]);
         });
 
@@ -64,6 +65,7 @@ class OmiseServiceProvider extends ServiceProvider implements DeferrableProvider
                 'webhook_secret' => config('omise.webhook_secret'),
                 'timeout' => config('omise.timeout', 30),
                 'ssl_verify' => config('omise.ssl_verify', true),
+                'default_currency' => config('omise.default_currency', 'THB'),
             ], $logger);
         });
 
