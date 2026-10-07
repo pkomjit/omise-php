@@ -65,7 +65,7 @@ class Document extends ApiResource
      */
     public function create(string $disputeId, string $filePath, ?string $kind = null): Response
     {
-        if (!file_exists($filePath)) {
+        if (! file_exists($filePath)) {
             throw new \InvalidArgumentException("File not found: {$filePath}");
         }
 

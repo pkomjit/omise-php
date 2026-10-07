@@ -146,6 +146,7 @@ class Card extends ApiResource
     public function getExpirationMonth(Response $card): ?int
     {
         $month = $card->get('expiration_month');
+
         return $month !== null ? (int) $month : null;
     }
 
@@ -155,6 +156,7 @@ class Card extends ApiResource
     public function getExpirationYear(Response $card): ?int
     {
         $year = $card->get('expiration_year');
+
         return $year !== null ? (int) $year : null;
     }
 

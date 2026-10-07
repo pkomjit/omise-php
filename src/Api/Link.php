@@ -185,6 +185,7 @@ class Link extends ApiResource
         if (is_array($charges) && isset($charges['total'])) {
             return (int) $charges['total'];
         }
+
         return 0;
     }
 

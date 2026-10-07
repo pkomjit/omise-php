@@ -350,6 +350,7 @@ class ShopeepayJumpApp extends AbstractPaymentMethod
     public function getMinimumInMainUnit(string $currency): float
     {
         $minSmallest = $this->getMinimumAmount($currency);
+
         return Currency::toMainUnit($minSmallest, $currency);
     }
 
@@ -359,6 +360,7 @@ class ShopeepayJumpApp extends AbstractPaymentMethod
     public function getMaximumInMainUnit(string $currency): float
     {
         $maxSmallest = $this->getMaximumAmount($currency);
+
         return Currency::toMainUnit($maxSmallest, $currency);
     }
 
