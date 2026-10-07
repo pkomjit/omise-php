@@ -368,7 +368,7 @@ class MobileBanking
     {
         return array_filter(
             self::BANK_NAMES,
-            fn(string $bankType) => self::BANK_COUNTRIES[$bankType] === 'Thailand',
+            fn (string $bankType) => self::BANK_COUNTRIES[$bankType] === 'Thailand',
             ARRAY_FILTER_USE_KEY
         );
     }
@@ -382,7 +382,7 @@ class MobileBanking
     {
         return array_filter(
             self::BANK_NAMES,
-            fn(string $bankType) => self::BANK_COUNTRIES[$bankType] === 'Singapore',
+            fn (string $bankType) => self::BANK_COUNTRIES[$bankType] === 'Singapore',
             ARRAY_FILTER_USE_KEY
         );
     }
@@ -496,6 +496,7 @@ class MobileBanking
 
         if ($amount < $min) {
             $minInMain = Currency::toMainUnit($min, $currency);
+
             throw new InvalidArgumentException(
                 "Amount must be at least {$min} ({$minInMain} {$currency})"
             );
@@ -503,6 +504,7 @@ class MobileBanking
 
         if ($amount > $max) {
             $maxInMain = Currency::toMainUnit($max, $currency);
+
             throw new InvalidArgumentException(
                 "Amount must not exceed {$max} ({$maxInMain} {$currency})"
             );

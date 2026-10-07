@@ -141,7 +141,7 @@ class Dispute extends ApiResource
      */
     public function close(string $disputeId, string $status): Response
     {
-        if (!in_array($status, [self::STATUS_WON, self::STATUS_LOST], true)) {
+        if (! in_array($status, [self::STATUS_WON, self::STATUS_LOST], true)) {
             throw new \InvalidArgumentException('status must be "won" or "lost"');
         }
 

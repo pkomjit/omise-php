@@ -293,6 +293,7 @@ class Schedule extends ApiResource
     public function getEvery(Response $schedule): ?int
     {
         $every = $schedule->get('every');
+
         return $every !== null ? (int) $every : null;
     }
 
@@ -352,7 +353,7 @@ class Schedule extends ApiResource
         }
 
         $validPeriods = [self::PERIOD_DAY, self::PERIOD_WEEK, self::PERIOD_MONTH];
-        if (!in_array($params['period'], $validPeriods, true)) {
+        if (! in_array($params['period'], $validPeriods, true)) {
             throw new InvalidArgumentException('period must be "day", "week", or "month"');
         }
     }

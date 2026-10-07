@@ -286,6 +286,7 @@ class Recipient extends ApiResource
     public function getBankBrand(Response $recipient): ?string
     {
         $account = $this->getBankAccount($recipient);
+
         return $account['brand'] ?? null;
     }
 
@@ -295,6 +296,7 @@ class Recipient extends ApiResource
     public function getBankAccountLastDigits(Response $recipient): ?string
     {
         $account = $this->getBankAccount($recipient);
+
         return $account['last_digits'] ?? null;
     }
 
@@ -321,7 +323,7 @@ class Recipient extends ApiResource
             throw new InvalidArgumentException('type is required');
         }
 
-        if (!in_array($params['type'], [self::TYPE_INDIVIDUAL, self::TYPE_CORPORATION], true)) {
+        if (! in_array($params['type'], [self::TYPE_INDIVIDUAL, self::TYPE_CORPORATION], true)) {
             throw new InvalidArgumentException('type must be "individual" or "corporation"');
         }
 
