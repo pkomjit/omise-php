@@ -124,8 +124,8 @@ class TruemoneyQR extends AbstractPaymentMethod
             return null;
         }
 
-        $content = @file_get_contents($url);
-        if ($content === false) {
+        $content = $this->downloadQrCode($url);
+        if ($content === null) {
             return null;
         }
 
@@ -142,8 +142,8 @@ class TruemoneyQR extends AbstractPaymentMethod
             return null;
         }
 
-        $content = @file_get_contents($url);
-        if ($content === false) {
+        $content = $this->downloadQrCode($url);
+        if ($content === null) {
             return null;
         }
 

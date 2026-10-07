@@ -2,6 +2,8 @@
 
 A PHP SDK for [Omise](https://www.omise.co/) payment gateway integration. Supports both standalone PHP and Laravel applications.
 
+> **Unofficial package.** This is a community-maintained SDK and is not affiliated with or endorsed by Omise / Opn Payments. For the official library see [omise/omise-php](https://github.com/omise/omise-php).
+
 ## Features
 
 - PHP 8.3+ support
@@ -147,7 +149,7 @@ php artisan vendor:publish --tag=omise-config
 ```env
 OMISE_PUBLIC_KEY=pkey_...
 OMISE_SECRET_KEY=skey_...
-OMISE_WEBHOOK_SECRET=whsec_...  # Optional, for webhook verification
+OMISE_WEBHOOK_SECRET=whsec_...  # Required to accept webhooks (unsigned webhooks are rejected)
 ```
 
 3. Use the facade:
@@ -395,7 +397,7 @@ $omise = Omise::fromEnvironment();
 Expected variables:
 - `OMISE_PUBLIC_KEY`
 - `OMISE_SECRET_KEY`
-- `OMISE_WEBHOOK_SECRET` (optional)
+- `OMISE_WEBHOOK_SECRET` (required for webhooks; without it `webhooks()->handle()` rejects every payload)
 - `OMISE_MODE` (optional, default: 'live')
 - `OMISE_DEFAULT_CURRENCY` (optional, default: 'THB')
 
@@ -499,7 +501,7 @@ composer test
 
 ## License
 
-MIT License
+MIT License. See [LICENSE](LICENSE).
 
 ## Contributing
 

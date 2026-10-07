@@ -228,4 +228,46 @@ abstract class AbstractPaymentMethod implements PaymentMethodInterface
 
         return $params;
     }
+
+    /**
+     * Download a QR code image from an Omise download URI.
+     *
+     * Only https URLs on omise.co are fetched, so a crafted charge payload
+     * (e.g. from an unverified webhook) cannot make the SDK read local files
+     * or reach internal hosts.
+     */
+    protected function downloadQrCode(string $url): ?string
+    {
+        if (! self::isOmiseDownloadUrl($url)) {
+            return null;
+        }
+
+        $context = stream_context_create([
+            'http' => [
+                'method' => 'GET',
+                'timeout' => 10,
+                'max_redirects' => 3,
+            ],
+        ]);
+
+        $content = @file_get_contents($url, false, $context);
+
+        return $content === false ? null : $content;
+    }
+
+    /**
+     * Check that a URL is an https URL served from omise.co.
+     */
+    public static function isOmiseDownloadUrl(string $url): bool
+    {
+        $parts = parse_url($url);
+
+        if ($parts === false || strtolower($parts['scheme'] ?? '') !== 'https' || isset($parts['user']) || isset($parts['port'])) {
+            return false;
+        }
+
+        $host = strtolower($parts['host'] ?? '');
+
+        return $host === 'omise.co' || str_ends_with($host, '.omise.co');
+    }
 }

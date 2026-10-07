@@ -119,9 +119,9 @@ class PromptPay extends AbstractPaymentMethod
             return null;
         }
 
-        $content = @file_get_contents($url);
+        $content = $this->downloadQrCode($url);
 
-        if ($content === false) {
+        if ($content === null) {
             return null;
         }
 
