@@ -287,6 +287,33 @@ if ($omise->events()->isSuccessfulCharge($event)) {
 }
 ```
 
+## Balance API
+
+```php
+// Retrieve the current account balance (GET /balance, secret key)
+$balance = $omise->getBalance(); // same as $omise->balance()->get()
+
+$api = $omise->balance();
+
+// All amounts are in the smallest currency unit (satang for THB)
+$api->getTotal($balance);        // total balance after deducted fees
+$api->getTransferable($balance); // amount available to be transferred
+$api->getReserve($balance);      // amount reserved
+$api->getOnHold($balance);       // amount on hold
+$api->getCurrency($balance);     // e.g. 'THB'
+$api->isLiveMode($balance);      // false for a test-mode balance
+$api->getCreatedAt($balance);    // DateTimeImmutable|null
+
+// Can the account transfer ฿500?
+$api->canTransfer($balance, 50000);
+
+// Plain array of the documented fields
+$api->summary($balance);
+// ['currency' => 'THB', 'total' => ..., 'transferable' => ..., 'reserve' => ..., 'on_hold' => ..., 'livemode' => false]
+```
+
+See [Balance API](https://docs.omise.co/balance-api/thailand).
+
 ## Webhook Handling
 
 ### Basic Usage
@@ -482,6 +509,7 @@ composer test
 | `getCharge($id)` | Retrieve a charge |
 | `getEvent($id)` | Retrieve an event |
 | `getCustomer($id)` | Retrieve a customer |
+| `getBalance()` | Retrieve the account balance |
 | `getDefaultCurrency()` | Get the default currency |
 | `isTestMode()` | Check if in test mode |
 | `isLiveMode()` | Check if in live mode |

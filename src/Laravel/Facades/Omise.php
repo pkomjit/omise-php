@@ -96,6 +96,7 @@ use Omise\Webhook\WebhookHandler;
  * @method static Response getCharge(string $chargeId)
  * @method static Response getEvent(string $eventId)
  * @method static Response getCustomer(string $customerId)
+ * @method static Response getBalance()
  * @method static string getDefaultCurrency()
  * @method static Config getConfig()
  * @method static bool isTestMode()
