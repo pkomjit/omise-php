@@ -734,6 +734,15 @@ class Omise
     }
 
     /**
+     * Get the current account balance.
+     * @throws ApiException
+     */
+    public function getBalance(): Response
+    {
+        return $this->balance()->get();
+    }
+
+    /**
      * Get the default currency.
      */
     public function getDefaultCurrency(): string
